@@ -7,6 +7,7 @@
 
 import sys
 import csv
+import argparse
 #insert after each print statement
 #sys.stdout.flush()
 
@@ -64,41 +65,49 @@ if len(sys.argv) == 1:
     CSVexport = False
 
 else:
-    # Process boolean arguments
-    if (sys.argv.count("topographicalPlot") > 0):
-        topographicalPlot = True
-    if (sys.argv.count("contourPlot") > 0):
-        contourPlot = True
-    if (sys.argv.count("longAxisPlot") > 0):
-        longAxisPlot = True
-    if (sys.argv.count("shortAxisPlot") > 0):
-        shortAxisPlot = True
-    if (sys.argv.count("surfacePlot") > 0):
-        surfacePlot = True
-    if (sys.argv.count("uniformityPlot") > 0):
-        uniformityPlot = True
-
-    # Process key/value arguments
-    for i, elem in enumerate(sys.argv):
-        print (sys.argv[i])
-        sys.stdout.flush()        
-        #data file parameter    
-        if sys.argv[i].startswith('data='):
-            fileName = sys.argv[i].split("=")[1]
-        elif sys.argv[i].startswith('gridResolution='):
-            gridResolution = int(sys.argv[i].split("=")[1])
-        elif sys.argv[i].startswith("topographicalResolution="):
-            topographicalResolution = int(sys.argv[i].split("=")[1])
-        elif sys.argv[i].startswith("scanName="):
-            scanName = sys.argv[i].split("=")[1]
-        elif sys.argv[i].startswith("powerBoundaryPercentage="):
-            powerBoundaryPercentage = float(sys.argv[i].split("=")[1])
-        elif sys.argv[i].startswith("pixelPitch="):
-            pixelPitch = float(sys.argv[i].split("=")[1])
-        elif sys.argv[i].startswith("targetWidth="):
-            targetWidth = int(sys.argv[i].split("=")[1])
-        elif sys.argv[i].startswith("targetHeight="):
-            targetHeight = int(sys.argv[i].split("=")[1])
+    #for more info on argparse see: http://pymotw.com/2/argparse/
+    parser = argparse.ArgumentParser()
+    parser.add_argument("data",                     '-f', '--file', action='store', dest='fileName', help='HELP TEXT')
+    parser.add_argument("gridResolution",           '-g', '--grid', action='store', dest='gridResolution', type=int)
+    parser.add_argument("topographicalResolution",  '-l', '--lines', action='store', dest='topograpicalResolution', type=int)
+    parser.add_argument("scanName",                 '-n', '--name', action='store', dest='scanName')
+    parser.add_argument("yPercentage",              '-b', '--boundary', action='store', dest='powerBoundaryPercentage', type=float)
+    parser.add_argument("pixelPitch",               '-p', '--pitch', action='store', dest='pixelPitch', type=float)
+    parser.add_argument("targetWidth",              '-w', '--width', action='store', dest='targetWidth', type=int)
+    parser.add_argument("targetHeight",             '-h', '--height', action='store', dest='targetHeight', type=int)
+    #boolean conditions        
+    parser.add_argument("topographicalPlot",        '-t', '--topographical', action='store_true', dest='topographicalPlot', default=False)
+    parser.add_argument("contourPlot",              '-c', '--contour', action='store_true', dest='contourPlot', default=False)
+    parser.add_argument("longAxisPlot",             '-L', "--long", action='store_true', dest='longAxisPlot', default=False)
+    parser.add_argument("shortAxisPlot",            '-S', "--short", action='store_true', dest='shortAxisPlot', default=False)
+    parser.add_argument("diagonalPlot",             '-D', "--diagonal", action='store_true', dest='diagAxisPlot', default=False)    
+    parser.add_argument("surfacePlot",              '-s', '--surface', action='store_true', dest='surfacePlot', default=False)
+    parser.add_argument("uniformityPlot",           '-u', '--uniformity', action='store_true', dest='uniformityPlot', default=False)
+    
+    parser.add_argument("autoSaveFigs",             '-a', '--autoSave', action='store_true', dest='autoSave', default=False)
+    parser.add_argument("csvExport",                '-e', '--exportcsv', action='store_true', dest='exportCSV', default=False)        
+    
+    args = parser.parse_args()
+    
+    fileName = args.fileName
+    gridResolution = args.gridResolution
+    topographicalResolution = args.topographicalResolution
+    scanName = args.scanName
+    powerBoundaryPercentage = args.powerBoundaryPercentage
+    pixelPitch = args.pixelPitch
+    targetWidth = args.targetWidth
+    targetHeight = args.targetHeight
+    topographicalPlot = args.topographicalPlot
+    contourPlot = args.contourPlot
+    longAxisPlot = args.longAxisPlot
+    shortAxisPlot = args.shortAxisPlot
+    diagonalAxisPlot = args.diagAxisPlot
+    surfacePlot = args.surfacePlot
+    uniformityPlot = args.uniformityPlot
+    
+    autoSaveFigures = args.autoSaveFigs
+    csvExport = args.csvExport
+    
 #functions
 def find_nearest_index(array, value):
     idx = (np.abs(array-value)).argmin()
