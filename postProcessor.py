@@ -472,7 +472,7 @@ def parseArguments():
     parser.add_argument('-H', '--height',           action='store', dest='targetHeight', default=defaultTargetHeight, help='Desired Light Profile Height (mm)', type=int)
     parser.add_argument('-a', '--aperture',         action='store', dest='aperture', default=defaultAperture, help='Diameter of aperture used on sensor', type=float)
     #boolean conditions        
-    parser.add_argument('-t', '--topographical',    action='store_true', dest='topographicalPlot', default=defaultTopographicalPlot, help='Generate Topograhical Plot')
+    parser.add_argument('-t', '--topograph',        action='store_true', dest='topographicalPlot', default=defaultTopographicalPlot, help='Generate Topograhical Plot')
     parser.add_argument('-c', '--contour',          action='store_true', dest='contourPlot', default=defaultContourPlot, help='Generate Contour Plot')
     parser.add_argument('-L', "--long",             action='store_true', dest='longAxisPlot', default=defaultLongAxisPlot, help='Generate Long Axis Plot')
     parser.add_argument('-S', "--short",            action='store_true', dest='shortAxisPlot', default=defaultShortAxisPlot, help='Generate Short Axis Plot')
@@ -481,7 +481,7 @@ def parseArguments():
     parser.add_argument('-u', '--uniformity',       action='store_true', dest='uniformityPlot', default=defaultUniformityPlot, help='Generate Uniformity Plot')
     parser.add_argument('-U', '--uniformityCheck',  action='store_true', dest='uniformityVsBoxSizeRatioPlot', default=defaultUniformityVsBoxSizeRatioPlot, help='Plot to ensure the sample points used for uniformity calculation are accurate')
     parser.add_argument('-A', '--autoSave',         action='store_true', dest='autoSave', default=defaultAutoSaveFigures, help='Auto Save Figures')
-    parser.add_argument('-e', '--exportcsv',        action='store_true', dest='csvExport', default=defaultCSVExport, help='Export CSV Data from interpolated long and short axis scans')        
+    parser.add_argument('-e', '--exportCSV',        action='store_true', dest='csvExport', default=defaultCSVExport, help='Export CSV Data from interpolated long and short axis scans')        
     
     args = parser.parse_args()
     
