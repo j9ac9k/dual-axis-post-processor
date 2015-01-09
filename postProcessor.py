@@ -18,19 +18,29 @@ from matplotlib import cm
 from matplotlib.ticker import LinearLocator, FormatStrFormatter
 from matplotlib.patches import Circle, Rectangle
 from matplotlib.collections import PatchCollection
+from matplotlib import style
+from matplotlib import colors
+
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 from pylab import savefig
 
+import seaborn as sns
+
+style.use('ggplot')
 import argparse
-#Importing seperate paring file
+#Importing separate paring file
 
 #default values should nothing be passed/specified
 
 
 def parseArguments():
-    defaultFileName = "sampleData.csv"
+    defaultFileName = "ZemaxDataSmoothed3.csv"
+    #defaultFileName = "sampledata.csv"
     #used in the naming of the plots
     defaultScanName = 'Sample Data'
+    
+    # Doug's Simulated data?
+    defaultSimulatedData = True
 
     #Dual Axis Plots
     defaultHeatMap = True
@@ -49,7 +59,7 @@ def parseArguments():
     #determines grid line spacing on contour plot
     defaultGridResolution = 10
     #number of contour plot lines to display
-    defaultContourResolution = 20
+    defaultContourResolution = 10
 
     #lamp boundary to render
     defaultPowerBoundaryPercentage = .75
@@ -71,17 +81,22 @@ def parseArguments():
     defaultCSVExport = False
 
     #automatically save figures
-    defaultAutoSaveFigures = True
+    defaultAutoSaveFigures = False
+
+    
 
     #set default colormap
     #'_r' reverses the colors red -> blue becomes blue -> red    
     #other good options include: cm.spectral, cm.cubehelix, cm.gist_earth, 
     #cm.coolwarm and Paul's favorite... cm.flag
-    defaultColorMap = cm.jet_r
+    #defaultColorMap = cm.cubehelix_r
+    defaultColorMap = sns.cubehelix_palette(8, start=2, rot=0, dark=0, light=.95, reverse=False, as_cmap=True)
     
 
     #for more info on argparse see: http://pymotw.com/2/argparse/
     parser = argparse.ArgumentParser()
+
+
     parser.add_argument('-f', '--file', action='store', dest='fileName',
                         default=defaultFileName,
                         help='The file name of the csv file used for post processing')
@@ -131,6 +146,10 @@ def parseArguments():
                         type=str)
 
     #boolean conditions
+    parser.add_argument('-q', '--simulated', action='store_true',
+                        dest='simulatedData',
+                        default=defaultSimulatedData,
+                        help="Pass argument if using data from Doug's Simulations")
     parser.add_argument('-c', '--contour', action='store_true',
                         dest='contourPlot',
                         default=defaultContourPlot,
@@ -200,6 +219,7 @@ def parseArguments():
     argument['csvExport'] = args.csvExport
     argument['heatMapAndUniformityPlot'] = args.heatMapAndUniformityPlot
     argument['colorMap'] = args.colorMap
+    argument['simulatedData'] = args.simulatedData
 
     return argument
 
@@ -207,8 +227,11 @@ def parseArguments():
 def process(args):
     #close all currently open plots
     plt.close("all")
-    x, y, z = parseRowRawData(args.get('fileName', None))
-    xi, yi, zi = gridInterpolation(x, y, z, args.get('pixelPitch', None))
+    if args['simulatedData']:
+        xi, yi, zi = parseSimData(args.get('fileName', None))
+    else:
+        x, y, z = parseRowRawData(args.get('fileName', None))
+        xi, yi, zi = gridInterpolation(x, y, z, args.get('pixelPitch', None))
     xi, yi, xOffset, yOffset, longAxisPower, shortAxisPower = \
         centerOrigin(xi, yi, zi, args['powerBoundaryPercentage'])
 
@@ -251,7 +274,7 @@ def process(args):
         ax.plot(boxSizeRatio, uniformity)
         plt.axis([np.min(boxSizeRatio), np.max(boxSizeRatio),
                  0, np.max(uniformity)*1.1])
-        plt.grid()
+        #plt.grid()
         if args['autoSaveFigures']:
             savefig(args['scanName'] + " uniformity vs box ratio plot", dpi=200)
 #==============================================================================
@@ -267,6 +290,7 @@ def process(args):
         divider = make_axes_locatable(plt.gca())
         cax = divider.append_axes("right", size="5%", pad=0.2)
         plt.colorbar(cax=cax)
+        ax.grid(True, which='both')
         if args['autoSaveFigures']:
             savefig(args['scanName'] + " Heat Map", dpi=200)
 #==============================================================================
@@ -284,7 +308,7 @@ def process(args):
         ax.add_patch(Rectangle((-args['targetWidth']/2,
                      -args['targetHeight']/2), args['targetWidth'],
             args['targetHeight'], fill=False, ls='dashed'))
-        plt.grid()
+        #plt.grid()
         divider = make_axes_locatable(plt.gca())
         cax = divider.append_axes("right", size="5%", pad=0.2)
         plt.colorbar(cax=cax)
@@ -295,6 +319,7 @@ def process(args):
 #==============================================================================
     if args['uniformityPlot']:
         uniformity, samples = calcUniformity(0, args, xi, yi, zi)
+        
         fig = plt.figure(num="Uniformity Plot (" + args['scanName'] + ")")
         ax = fig.add_subplot(111)
         ax.set_title(args['scanName'] + ' Uniformity: ' +
@@ -302,27 +327,33 @@ def process(args):
         plt.gca().set_aspect('equal', adjustable='box')
         plt.gca().set_xticks(xTicks)
         plt.gca().set_yticks(yTicks)
-        #draw contour line
+        
+        # Draw contour line
         CS = plt.contour(xi, yi, zi, [args['powerBoundaryPercentage']
-                         * np.max(zi)], alpha=0.5)
+                         * np.max(zi)],
+                         alpha=0.9,
+                         colors=colors.rgb2hex(cmap(args['powerBoundaryPercentage'])))
         manual_locations = [(0, np.max(yi))]
         plt.clabel(CS, [args['powerBoundaryPercentage']*np.max(zi)],
                    inline=True,
                    fmt='%1.2f',
                    fontsize=16,
                    manual=manual_locations)
+
+
+        # Showing the Uniformity Points
         labels = np.around(samples[:, 2], decimals=3)
         samplePoints = []
         for label, x, y, in zip(labels, samples[:, 0], samples[:, 1]):
-            #generate labels
+            # Generate labels
             plt.annotate(
                 '{0:3.1%}'.format(label),
                 xy=(x, y), xytext = (x, y),
                 textcoords = 'offset points', ha = 'center', va = 'center',
-                bbox = dict(boxstyle='round,pad=0.5', fc='yellow', alpha=0.2),
+                bbox = dict(boxstyle='round,pad=0.5', fc='yellow', alpha=0.7),
                 arrowprops = dict(arrowstyle='->',
                                   connectionstyle='arc3, rad=0'))
-            #generate circle
+            # Generate circle
             circle = Circle((x, y), args['aperture']/2)
             samplePoints.append(circle)
         color = samples[:, 2]
@@ -330,11 +361,13 @@ def process(args):
         p.set_clim([0, 1])
         p.set_array(np.array(color))
         ax.add_collection(p)
+
         #draw rectangle
         ax.add_patch(Rectangle((-args['targetWidth']/2,
                      -args['targetHeight']/2), args['targetWidth'],
             args['targetHeight'], fill=False, ls='dashed'))
 
+        
         #draw colorbar
         divider = make_axes_locatable(plt.gca())
         cax = divider.append_axes("right", size="5%", pad=0.2)
@@ -342,9 +375,9 @@ def process(args):
         if args['autoSaveFigures']:
             savefig(args['scanName'] + " Uniformity Plot", dpi=200)
 
-#==============================================================================
+# =============================================================================
 #     #Surface Plot
-#==============================================================================
+# =============================================================================
     if args['surfacePlot']:
         fig = plt.figure(num="Surface Plot (" + args['scanName'] + ")")
         ax = fig.add_subplot(111)
@@ -354,7 +387,7 @@ def process(args):
         ax.set_zlim(0, 1)
         ax.zaxis.set_major_locator(LinearLocator(10))
         ax.zaxis.set_major_formatter(FormatStrFormatter('%.02f'))
-        fig.colorbar(surf)
+        #fig.colorbar(surf)
         plt.axis('equal', adjustable='box')
         if args['autoSaveFigures']:
             savefig(args['scanName'] + " surface plot", dpi=200)
@@ -370,6 +403,7 @@ def process(args):
                 for row in rows:
                     writer.writerow(row)
             output.close()
+        
         fig = plt.figure(num="Long Axis Plot (" + args['scanName'] + ")")
         ax = fig.add_subplot(111)
         ax.set_title(args['scanName'] + ' Long Axis Scan')
@@ -378,10 +412,12 @@ def process(args):
         plt.gca().set_xticks(xTicks)
         plt.gca().set_yticks(np.arange(0., 1.+1./args['gridResolution'],
                              1./args['gridResolution']))
-        ax.grid(True, which='both')
+        #ax.grid(False, which='both')
         plt.axis([int(np.min(xi)), int(np.max(xi)), 0,
                  np.max(longAxisPower)*1.1])
-        ax.plot(xi[0, :], longAxisPower)
+        ax.fill(xi[0, :], longAxisPower,
+                color=colors.rgb2hex(cmap(.5)),               
+                alpha=0.3)
         if args['autoSaveFigures']:
             savefig(args['scanName'] + " long axis plot", dpi=200)
 
@@ -402,10 +438,11 @@ def process(args):
         ax.set_xlabel('Position (mm)')
         ax.set_ylabel('Normalized Output')
         plt.gca().set_xticks(yTicks)
-        ax.grid(True, which='both')
+        #ax.grid(False, which='both')
         plt.axis([int(np.min(yi)), int(np.max(yi)), 0,
                  np.max(shortAxisPower) * 1.1])
-        ax.plot(yi[:, 0], shortAxisPower)
+        ax.fill(yi[:, 0], shortAxisPower, color=colors.rgb2hex(cmap(0.5)),
+                alpha=0.3)
         if args['autoSaveFigures']:
             savefig(args['scanName'] + " short axis plot", dpi=200)
 
@@ -423,7 +460,8 @@ def process(args):
         plt.gca().set_yticks(yTicks)
         plt.pcolormesh(xi, yi, zi, cmap=cmap)
         plt.axis([np.min(xi), np.max(xi), np.min(yi), np.max(yi)])
-        #draw rectangle
+        
+        # draw rectangle
         ax.add_patch(Rectangle((-args['targetWidth']/2,
                                 -args['targetHeight']/2),
                                args['targetWidth'],
@@ -445,7 +483,13 @@ def process(args):
             circle = Circle((x, y), args['aperture']/2)
             samplePoints.append(circle)
         color = samples[:, 2]
-        p = PatchCollection(samplePoints, cmap=cm.Greys, lw=0)
+        
+        # Changing the gray colormap based on reverse or non-reverse base cmap
+        if sum(cmap(1))/len(cmap(1)) > 0.8:
+            grayCmap = cm.Greys_r
+        else:
+            grayCmap = cm.Greys
+        p = PatchCollection(samplePoints, cmap=grayCmap, lw=0)
         p.set_clim([0, 1])
         p.set_array(np.array(color))
         ax.add_collection(p)
@@ -497,13 +541,14 @@ def process(args):
         ax.set_ylabel('Normalized Output')
         ax.set_xlabel('Distance from Lamp Center (mm)')
         plt.gca().set_xticks(yTicks)
-        ax.grid(True, which='both')
+        #ax.grid(False, which='both')
         plt.axis([-int(abs(xAxisStart-xAxisEnd)/2), 
                   int(abs(xAxisStart-xAxisEnd)/2), 0, 
                   np.max(diagPower) * 1.1])        
-        ax.plot(np.linspace(-abs(xAxisStart-xAxisEnd)/2, 
+        ax.fill(np.linspace(-abs(xAxisStart-xAxisEnd)/2, 
                             abs(xAxisStart-xAxisEnd)/2, 
-                            len(diagPower)), diagPower)
+                            len(diagPower)), diagPower,
+                color=colors.rgb2hex(cmap(0.5)), alpha=0.3)
         if args['autoSaveFigures']:
             savefig(args['scanName'] + " diagonal axis plot", dpi=200)
     plt.show(True)
@@ -580,6 +625,23 @@ def parseRowRawData(fileName):
     return x, y, z
 
 
+def parseSimData(fileName):
+    sim_data = np.genfromtxt(fileName, delimiter=',', skip_header=23)
+
+    xi = sim_data[0, 1:]
+    yi = sim_data[1:, 0]
+    
+    sim_data = np.delete(sim_data, 0, 0)
+    sim_data = np.delete(sim_data, 0, 1)
+    
+    xi, yi = np.meshgrid(xi, yi)
+    
+    zi = np.ma.array(sim_data / np.max(sim_data))
+
+    return xi, yi, zi
+
+
+
 def gridInterpolation(x, y, z, pixelPitch):
     xi = np.arange(min(x), max(x)+pixelPitch, pixelPitch)
     yi = np.arange(min(y), max(y)+pixelPitch, pixelPitch)
@@ -595,6 +657,7 @@ def gridInterpolation(x, y, z, pixelPitch):
     return xi, yi, zi
 
 
+
    ### Center Finding Portion ###
 def centerOrigin(xi, yi, zi, powerBoundaryPercentage):
     #generating new variables to facilitate edge-finding
@@ -602,7 +665,7 @@ def centerOrigin(xi, yi, zi, powerBoundaryPercentage):
 
     #finding Y value that corresponds to highest power readings for all X
     highestPower = 0
-    for n in range(len(Y)):
+    for n in list(range(len(Y))):
         totalPower = sum(Z[n, :])
         if totalPower > highestPower:
             highestPower = totalPower
