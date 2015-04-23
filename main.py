@@ -24,7 +24,7 @@ appDataPath = os.environ["APPDATA"] + "\\Phoseon\\PostProcessor\\"
 if not os.path.exists(appDataPath):
     try:
         os.makedirs(appDataPath)
-    except Exception, e:
+    except Exception:
         appDataPath = os.getcwd()
 
 class MainDialog(QMainWindow, pyMainWindow.Ui_mainWindow):
@@ -61,7 +61,7 @@ class MainDialog(QMainWindow, pyMainWindow.Ui_mainWindow):
         if csvFile[0]:
             try:
                 self.inputFileLineEdit.setText(csvFile[0])
-            except Exception, e:
+            except Exception as e:
                 QMessageBox.critical(self, __appname__, "Error importing file, error is \r\n" + str(e))
                 return
 

@@ -34,27 +34,26 @@ import argparse
 
 
 def parseArguments():
-    defaultFileName = "ZemaxDataSmoothed3.csv"
+    defaultFileName = "FJ800 30x63 1-SLM 10mm.csv"
     #defaultFileName = "sampledata.csv"
     #used in the naming of the plots
     defaultScanName = 'Sample Data'
     
     # Doug's Simulated data?
-    defaultSimulatedData = True
+    defaultSimulatedData = False
 
     #Dual Axis Plots
-    defaultHeatMap = True
+    defaultHeatMap = False
     defaultContourPlot = True
-    defaultSurfacePlot = True
+    defaultSurfacePlot = False
     defaultUniformityPlot = True
-
-    defaultHeatMapAndUniformityPlot = True
-    defaultUniformityVsBoxSizeRatioPlot = True
+    defaultHeatMapAndUniformityPlot = False
+    defaultUniformityVsBoxSizeRatioPlot = False
 
     #Single Axis Plots
-    defaultLongAxisPlot = True
-    defaultShortAxisPlot = True
-    defaultDiagonalAxisPlot = True
+    defaultLongAxisPlot = False
+    defaultShortAxisPlot = False
+    defaultDiagonalAxisPlot = False
 
     #determines grid line spacing on contour plot
     defaultGridResolution = 10
@@ -62,7 +61,7 @@ def parseArguments():
     defaultContourResolution = 10
 
     #lamp boundary to render
-    defaultPowerBoundaryPercentage = .75
+    defaultPowerBoundaryPercentage = .90
 
     #lamp profile to evaluate
     #FJ800 - 100, 100
@@ -233,7 +232,7 @@ def process(args):
         x, y, z = parseRowRawData(args.get('fileName', None))
         xi, yi, zi = gridInterpolation(x, y, z, args.get('pixelPitch', None))
     xi, yi, xOffset, yOffset, longAxisPower, shortAxisPower = \
-        centerOrigin(xi, yi, zi, args['powerBoundaryPercentage'])
+        centerOrigin(xi, yi, zi)
 
     #Setting The ColorMap
     cmap = args['colorMap']
@@ -367,14 +366,12 @@ def process(args):
                      -args['targetHeight']/2), args['targetWidth'],
             args['targetHeight'], fill=False, ls='dashed'))
 
-        
         #draw colorbar
         divider = make_axes_locatable(plt.gca())
         cax = divider.append_axes("right", size="5%", pad=0.2)
         plt.colorbar(p, cax=cax)
         if args['autoSaveFigures']:
             savefig(args['scanName'] + " Uniformity Plot", dpi=200)
-
 # =============================================================================
 #     #Surface Plot
 # =============================================================================
@@ -384,14 +381,14 @@ def process(args):
         ax.set_title(args['scanName'] + ' Surface Plot')
         ax = fig.gca(projection='3d')
         surf = ax.plot_surface(xi, yi, zi, cmap=cmap, linewidth=0)
+
         ax.set_zlim(0, 1)
         ax.zaxis.set_major_locator(LinearLocator(10))
         ax.zaxis.set_major_formatter(FormatStrFormatter('%.02f'))
-        #fig.colorbar(surf)
+        fig.colorbar(surf)
         plt.axis('equal', adjustable='box')
         if args['autoSaveFigures']:
             savefig(args['scanName'] + " surface plot", dpi=200)
-
 #==============================================================================
 #     #Long Axis Plot
 #==============================================================================
@@ -420,7 +417,6 @@ def process(args):
                 alpha=0.3)
         if args['autoSaveFigures']:
             savefig(args['scanName'] + " long axis plot", dpi=200)
-
 #==============================================================================
 #     #Short Axis Plot
 #==============================================================================
@@ -445,7 +441,6 @@ def process(args):
                 alpha=0.3)
         if args['autoSaveFigures']:
             savefig(args['scanName'] + " short axis plot", dpi=200)
-
 #==============================================================================
 #     Generate Heat Map and Uniformity Plot Overlapped (Special Request)
 #==============================================================================
@@ -552,7 +547,6 @@ def process(args):
         if args['autoSaveFigures']:
             savefig(args['scanName'] + " diagonal axis plot", dpi=200)
     plt.show(True)
-
 #==============================================================================
 #     Find the index in array that is closest to Value
 #==============================================================================
@@ -641,7 +635,6 @@ def parseSimData(fileName):
     return xi, yi, zi
 
 
-
 def gridInterpolation(x, y, z, pixelPitch):
     xi = np.arange(min(x), max(x)+pixelPitch, pixelPitch)
     yi = np.arange(min(y), max(y)+pixelPitch, pixelPitch)
@@ -659,7 +652,7 @@ def gridInterpolation(x, y, z, pixelPitch):
 
 
    ### Center Finding Portion ###
-def centerOrigin(xi, yi, zi, powerBoundaryPercentage):
+def centerOrigin(xi, yi, zi):
     #generating new variables to facilitate edge-finding
     X, Y, Z = sorted(np.unique(xi)), sorted(np.unique(yi)), zi.data
 
@@ -672,7 +665,7 @@ def centerOrigin(xi, yi, zi, powerBoundaryPercentage):
             longAxisPower = Z[n, :]
 
     #setting the value that will be used to determine the cutoff...
-    boundaryValue = max(longAxisPower)*powerBoundaryPercentage
+    boundaryValue = max(longAxisPower)*.5
 
     #finding x Boundaries
     xBoundary1, xBoundary2 = find_boundaries(X, longAxisPower, boundaryValue)
