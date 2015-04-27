@@ -2,13 +2,21 @@ import sys
 from cx_Freeze import setup, Executable
 import matplotlib
 
+#################
+# To build, in cmd or PS run:
+# python setup.py build
+#################
+
 base = None
 if sys.platform == "win32":
     base = "Win32GUI"
 # Dependencies are automatically detected, but it might need fine tuning.
-build_exe_options = {"includes": ["matplotlib.backends.backend_qt4agg"],
-                     "include_files": [(matplotlib.get_data_path(),
-                                        "mpl-data")],
+build_exe_options = {"includes": ["matplotlib.backends.backend_qt4agg",
+                                  "scipy.special._ufuncs_cxx", 
+                                  "scipy.integrate.vode",
+                                  "scipy.integrate.lsoda",
+                                  "scipy.sparse.csgraph._validation"],
+                     "include_files": [(matplotlib.get_data_path(), "mpl-data")],
                      "excludes": ["pyzmw",
                                   "wxpython",
                                   "tables",
@@ -18,19 +26,9 @@ build_exe_options = {"includes": ["matplotlib.backends.backend_qt4agg"],
                                   "sqlite3",
                                   "Tkinter",
                                   "ipython",
-                                  "scipy.lib.lapack.flapack",
-                                  #"numpy.linalg._umath_linalg",
-                                  "scipy.lib.blas.fblas",
-                                  #"numpy.core._dotblas",
-                                  #"numpy.linalg.lapack_lite",
-                                  "scipy.sparse._sparsetools",
                                   "_ssl",
-                                  #"numpy.core.multiarray"
-                                  #"numpy.fft",
-                                  #"unicodedata",
-                                  #"matplotlib.ft2font",
                                   "PyQt4.QtSvg",
-                                  ],
+                                  "numpy.core._dotblas"],
                      "optimize": 0,
                      }
 
@@ -41,7 +39,7 @@ executables = [Executable("pyqt4_matplotlib.py", base=base)]
 
 
 setup(name="Post Processing Script",
-      version="0.1",
+      version="0.2",
       description="My GUI application!",
       options={"build_exe": build_exe_options},
       executables=[Executable("main.py", base=base)])

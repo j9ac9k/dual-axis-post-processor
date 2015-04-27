@@ -1,13 +1,20 @@
 __appname__ = "2D Scan Post Processor"
 __module__ = "main"
 
+#####################################
+# in the mainWindow_rev*.py file change:
+# import images_rc
+# to
+# from ui_files import images_rc
+#####################################
+
+
 
 from PyQt4.QtGui import QMainWindow
 from PyQt4.QtGui import QIcon
 from PyQt4.QtGui import QFileDialog
 from PyQt4.QtGui import QMessageBox
 from PyQt4.QtGui import QApplication
-
 from PyQt4.QtCore import QSettings
 from PyQt4.QtCore import QCoreApplication
 
@@ -16,8 +23,7 @@ import os
 import sys
 #import subprocess
 import os.path
-
-from ui_files import mainWindow_rev01 as pyMainWindow
+from ui_files import mainWindow_rev02 as pyMainWindow
 
 appDataPath = os.environ["APPDATA"] + "\\Phoseon\\PostProcessor\\"
 
@@ -57,10 +63,13 @@ class MainDialog(QMainWindow, pyMainWindow.Ui_mainWindow):
         """
         opens up a file browse button
         """
-        csvFile = QFileDialog.getOpenFileNameAndFilter(parent=None, caption="Import CSV file", directory=".", filter="2-Axis Stage CSV Output (*.csv)")
-        if csvFile[0]:
+        dataFile = QFileDialog.getOpenFileNameAndFilter(parent=None,
+                                                        caption="Import Data file",
+                                                        directory=".",
+                                                        filter="2-Axis Stage CSV Output (*.csv);;Simulated Data (*.txt)")
+        if dataFile[0]:
             try:
-                self.inputFileLineEdit.setText(csvFile[0])
+                self.inputFileLineEdit.setText(dataFile[0])
             except Exception as e:
                 QMessageBox.critical(self, __appname__, "Error importing file, error is \r\n" + str(e))
                 return
@@ -88,13 +97,20 @@ class MainDialog(QMainWindow, pyMainWindow.Ui_mainWindow):
         args['aperture'] = float(str(self.apertureComboBox.currentText()).split('mm')[0])
         args['autoSaveFigures'] = self.autoSaveFigsCheckbox.isChecked()
         args['csvExport'] = self.exportInterpolatedCheckbox.isChecked()
-
+        args['colorMapReverse'] = self.colormapReverseCheckbox.isChecked()
         args['colorMap'] = str(self.colormapComboBox.currentText()).lower()
-        #replace spaces with understores to handle colormaps
+        
 
-        args['colorMap'] = args['colorMap'].replace(" ", "_")
-        if self.colormapReverseCheckbox.isChecked():
-            args['colorMap'] += str('_r')
+        if str(self.inputFileLineEdit.text()).split('.')[-1] == 'txt':
+            args['simulatedData'] = True
+        else:
+            args['simulatedData'] = False
+
+        #replace spaces with understores to handle colormaps
+        #args['colorMap'] = args['colorMap'].replace(" ", "_")
+
+        #if self.colormapReverseCheckbox.isChecked():
+        #    args['colorMap'] += str('_r')
         #add this plot for Garth at a later time...
         args['heatMapAndUniformityPlot'] = False
         postProcessor.process(args)
@@ -102,7 +118,7 @@ class MainDialog(QMainWindow, pyMainWindow.Ui_mainWindow):
 
 def main(args):
     QCoreApplication.setApplicationName("2D Scan Post Processor")
-    QCoreApplication.setApplicationVersion("0.1")
+    QCoreApplication.setApplicationVersion("0.2")
     QCoreApplication.setOrganizationName("Phoseon Technology")
     QCoreApplication.setOrganizationDomain("phoseon.com")
 
@@ -113,3 +129,4 @@ def main(args):
     sys.exit(app.exec_())
 if __name__ == "__main__":
     main(sys.argv[1:])
+

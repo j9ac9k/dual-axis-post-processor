@@ -13,28 +13,29 @@ import csv
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.mlab as mlab
+import seaborn as sns
+import argparse
 from mpl_toolkits.mplot3d import Axes3D
-from matplotlib import cm
+
 from matplotlib.ticker import LinearLocator, FormatStrFormatter
 from matplotlib.patches import Circle, Rectangle
 from matplotlib.collections import PatchCollection
+
 from matplotlib import style
+style.use('ggplot')
+
+from matplotlib import cm
 from matplotlib import colors
 
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 from pylab import savefig
 
-import seaborn as sns
 
-style.use('ggplot')
-import argparse
+
 #Importing separate paring file
-
-#default values should nothing be passed/specified
-
-
 def parseArguments():
-    defaultFileName = "FJ800 30x63 1-SLM 10mm.csv"
+    #default values should nothing be passed/specified
+    defaultFileName = "nottroubleSomeCenter.csv"
     #defaultFileName = "sampledata.csv"
     #used in the naming of the plots
     defaultScanName = 'Sample Data'
@@ -66,7 +67,7 @@ def parseArguments():
     #lamp profile to evaluate
     #FJ800 - 100, 100
     #FJ100-75 - 75, 25
-    defaultTargetWidth, defaultTargetHeight = 100, 100
+    defaultTargetWidth, defaultTargetHeight = 200, 100
 
     #default to 1mm, can be lowered for higher resolution plots
     defaultPixelPitch = .2
@@ -82,16 +83,11 @@ def parseArguments():
     #automatically save figures
     defaultAutoSaveFigures = False
 
-    
-
     #set default colormap
-    #'_r' reverses the colors red -> blue becomes blue -> red    
-    #other good options include: cm.spectral, cm.cubehelix, cm.gist_earth, 
-    #cm.coolwarm and Paul's favorite... cm.flag
     #defaultColorMap = cm.cubehelix_r
-    defaultColorMap = sns.cubehelix_palette(8, start=2, rot=0, dark=0, light=.95, reverse=False, as_cmap=True)
-    
-
+    #defaultColorMap = sns.cubehelix_palette(8, start=2, rot=0, dark=0, light=.95, reverse=False, as_cmap=True)
+    defaultColorMap = 'red'
+    defaultReverse = False
     #for more info on argparse see: http://pymotw.com/2/argparse/
     parser = argparse.ArgumentParser()
 
@@ -145,6 +141,10 @@ def parseArguments():
                         type=str)
 
     #boolean conditions
+    parser.add_argument('-R', '--reverse', action='store_true',
+                        dest='colorMapReverse',
+                        default=defaultReverse,
+                        help='Reverse Color Map Scheme')
     parser.add_argument('-q', '--simulated', action='store_true',
                         dest='simulatedData',
                         default=defaultSimulatedData,
@@ -194,7 +194,6 @@ def parseArguments():
                         default=defaultHeatMapAndUniformityPlot,
                         help='Heat Map and Uniformity Plot super-positioned, a plot request from Garth')
 
-
     args = parser.parse_args()
     argument = {}
     argument['fileName'] = args.fileName
@@ -218,8 +217,8 @@ def parseArguments():
     argument['csvExport'] = args.csvExport
     argument['heatMapAndUniformityPlot'] = args.heatMapAndUniformityPlot
     argument['colorMap'] = args.colorMap
+    argument['colorMapReverse'] = args.colorMapReverse
     argument['simulatedData'] = args.simulatedData
-
     return argument
 
 
@@ -231,36 +230,35 @@ def process(args):
     else:
         x, y, z = parseRowRawData(args.get('fileName', None))
         xi, yi, zi = gridInterpolation(x, y, z, args.get('pixelPitch', None))
-    xi, yi, xOffset, yOffset, longAxisPower, shortAxisPower = \
-        centerOrigin(xi, yi, zi)
+    xi, yi, xOffset, yOffset, longAxisPower, shortAxisPower = centerOrigin(xi, yi, zi)
+
+    color_maps = {'red': sns.dark_palette("red", reverse=args.get('colorMapReverse', None), as_cmap=True),
+                  'green': sns.dark_palette("green", reverse=args.get('colorMapReverse', None), as_cmap=True),
+                  'blue': sns.dark_palette("blue", reverse=args.get('colorMapReverse', None), as_cmap=True),
+                  'purple': sns.dark_palette("purple", reverse=args.get('colorMapReverse', None), as_cmap=True)}
+
 
     #Setting The ColorMap
-    cmap = args['colorMap']
+    cmap = color_maps[args['colorMap']]
 
     #cmap.set_bad('r', 1.0)
 #==============================================================================
 #     #determining grid-line spacing
 #==============================================================================
-    xTickBoundary = \
-        args['gridResolution']*int(max(abs(np.min(xi)),
-                                   np.max(xi))/args['gridResolution'])
-    xTicks = \
-        np.arange(-xTickBoundary, xTickBoundary + args['gridResolution'],
-                  args['gridResolution'])
-    yTickBoundary = \
-        args['gridResolution']*int(max(abs(np.min(yi)),
-                                   np.max(yi))/args['gridResolution'])
-    yTicks = \
-        np.arange(-yTickBoundary, yTickBoundary+args['gridResolution'],
-                  args['gridResolution'])
+    xTickBoundary = args['gridResolution'] * int(max(abs(np.min(xi)),
+                                                     np.max(xi)) / args['gridResolution'])
+    xTicks = np.arange(-xTickBoundary, xTickBoundary + args['gridResolution'],
+                       args['gridResolution'])
+    yTickBoundary = args['gridResolution'] * int(max(abs(np.min(yi)),
+                                                     np.max(yi))/args['gridResolution'])
+    yTicks = np.arange(-yTickBoundary, yTickBoundary + args['gridResolution'],
+                       args['gridResolution'])
 #==============================================================================
 #     #calculate uniformity as a function of box size ratio
 #==============================================================================
     if args['uniformityVsBoxSizeRatioPlot']:
-        boxSizeRatio = \
-            np.arange(-0.10, .330, 1 / (args['pixelPitch'] *
-                                        max(args['targetWidth'],
-                                            args['targetHeight'])))
+        boxSizeRatio = np.arange(-0.10, .330, 1 / (args['pixelPitch'] * max(args['targetWidth'],
+                                                                            args['targetHeight'])))
         uniformity = []
         for i in boxSizeRatio:
             uniformity.append(calcUniformity(i, args, xi, yi, zi)[0])
@@ -339,7 +337,6 @@ def process(args):
                    fontsize=16,
                    manual=manual_locations)
 
-
         # Showing the Uniformity Points
         labels = np.around(samples[:, 2], decimals=3)
         samplePoints = []
@@ -409,7 +406,6 @@ def process(args):
         plt.gca().set_xticks(xTicks)
         plt.gca().set_yticks(np.arange(0., 1.+1./args['gridResolution'],
                              1./args['gridResolution']))
-        #ax.grid(False, which='both')
         plt.axis([int(np.min(xi)), int(np.max(xi)), 0,
                  np.max(longAxisPower)*1.1])
         ax.fill(xi[0, :], longAxisPower,
@@ -434,7 +430,6 @@ def process(args):
         ax.set_xlabel('Position (mm)')
         ax.set_ylabel('Normalized Output')
         plt.gca().set_xticks(yTicks)
-        #ax.grid(False, which='both')
         plt.axis([int(np.min(yi)), int(np.max(yi)), 0,
                  np.max(shortAxisPower) * 1.1])
         ax.fill(yi[:, 0], shortAxisPower, color=colors.rgb2hex(cmap(0.5)),
@@ -459,8 +454,9 @@ def process(args):
         # draw rectangle
         ax.add_patch(Rectangle((-args['targetWidth']/2,
                                 -args['targetHeight']/2),
-                               args['targetWidth'],
-                               args['targetHeight'], fill=False, ls='dashed'))
+                                 args['targetWidth'],
+                                 args['targetHeight'],
+                                 fill=False, ls='dashed'))
 
         uniformity, samples = calcUniformity(0, args, xi, yi, zi)
         labels = np.around(samples[:, 2], decimals=3)
@@ -502,60 +498,67 @@ def process(args):
 #==============================================================================
 #     Generate Interpoalted plot that goes corner to corner
 #
-#     Currently can only accomidate square profile lamps
 #==============================================================================
     if args['diagonalAxisPlot']:
-        #induce a change in coordinates
-        #determine rotation angle (radians)
-        #rotationAngle = np.arctan(targetHeight/targetWidth)
-        #xiPrime = np.cos(rotationAngle)*xi + np.sin(rotationAngle)*yi
-        #yiPrime = -np.sin(rotationAngle)*xi + np.cos(rotationAngle)*xi
-        xDiagStartIndex = find_nearest_index(xi[0, :],
-                                             -args['targetWidth'] * 1.1 / 2)
-        yDiagStartIndex = find_nearest_index(yi[:, 0],
-                                             -args['targetHeight'] * 1.1 / 2)
+        try:
+            theta = np.arctan([args['targetHeight']/args['targetWidth']])
+        except ZeroDivisionError:
+            theta = np.arctan[(np.inf)]
 
-        xDiagEndIndex = find_nearest_index(xi[0, :],
-                                           args['targetWidth'] * 1.1 / 2)
-        yDiagEndIndex = find_nearest_index(yi[:, 0],
-                                           args['targetHeight'] * 1.1 / 2)
-        Xidx, Yidx = xDiagStartIndex, yDiagStartIndex
-        diagPower = []
-        while Xidx < xDiagEndIndex:
-            diagPower.append(zi[Yidx, Xidx])
-            Yidx += 1
-            diagPower.append(zi[Yidx, Xidx])
-            Xidx += 1
-        xAxisStart = \
-            -(xi[0, xDiagStartIndex]**2 + yi[yDiagStartIndex, 0]**2)**0.5
-        xAxisEnd = (xi[0, xDiagEndIndex]**2 + yi[yDiagEndIndex, 0]**2)**0.5
+        theta = -theta
+        # convert 2D array into one long 1D array
+        xiF, yiF, ziF = xi.flatten(), yi.flatten(), zi.flatten()
+        
+        #Givens transformation matrix
+        rotMatrix = np.matrix(np.squeeze([[np.cos(theta), np.sin(theta)],
+                                          [-np.sin(theta), np.cos(theta)]]))
+
+        # Generated a ? x 2 matrix of x and y coordinates for matrix operations
+        coordinates = np.transpose(np.matrix(np.squeeze([[xiF], [yiF]])))
+        
+        # Performing the Givens Rotation
+        rotCoordinates = coordinates * rotMatrix
+
+        
+
+        # Reinterpolate the data
+        xiR, yiR, ziR = gridInterpolation(np.squeeze(rotCoordinates[:,0]),
+                                          np.squeeze(rotCoordinates[:,1]), 
+                                          ziF, 
+                                          args.get('pixelPitch', None))
+
+        diagPowerIndex = find_nearest_index(yiR[:, 0], 0)
+        diagPower = ziR[diagPowerIndex, :] / np.max(ziR[diagPowerIndex, :])
+
+        xAxisStart = int(-0.75 * np.sqrt(args['targetWidth']**2 + args['targetHeight']**2))
+        xAxisEnd = abs(xAxisStart)
+        diagTicks = \
+            np.arange(xAxisStart, xAxisEnd + args['gridResolution'],
+                      args['gridResolution'])
+
         fig = plt.figure(num="Diagonal Axis Plot (" + args['scanName'] + ")")
         ax = fig.add_subplot(111)
         ax.set_title(args['scanName'] + ' Diagonal Axis Scan')
-        #ax.set_xlabel('Position (mm)')
         ax.set_ylabel('Normalized Output')
         ax.set_xlabel('Distance from Lamp Center (mm)')
-        plt.gca().set_xticks(yTicks)
-        #ax.grid(False, which='both')
-        plt.axis([-int(abs(xAxisStart-xAxisEnd)/2), 
-                  int(abs(xAxisStart-xAxisEnd)/2), 0, 
-                  np.max(diagPower) * 1.1])        
-        ax.fill(np.linspace(-abs(xAxisStart-xAxisEnd)/2, 
-                            abs(xAxisStart-xAxisEnd)/2, 
-                            len(diagPower)), diagPower,
+        
+        plt.gca().set_xticks(diagTicks)
+        plt.axis([int(xAxisStart*1.5), int(xAxisEnd*1.5), 
+                  0, np.max(diagPower)*1.1])      
+        ax.fill(xiR[0, :], diagPower,
                 color=colors.rgb2hex(cmap(0.5)), alpha=0.3)
+        
         if args['autoSaveFigures']:
             savefig(args['scanName'] + " diagonal axis plot", dpi=200)
-    plt.show(True)
-#==============================================================================
-#     Find the index in array that is closest to Value
-#==============================================================================
+        plt.show(True)
 
 def main():
     args = parseArguments()
     process(args)
 
-
+#==============================================================================
+#     Find the index in array that is closest to Value
+#==============================================================================
 def find_nearest_index(array, value):
     idx = (np.abs(array-value)).argmin()
     return idx
@@ -620,7 +623,7 @@ def parseRowRawData(fileName):
 
 
 def parseSimData(fileName):
-    sim_data = np.genfromtxt(fileName, delimiter=',', skip_header=23)
+    sim_data = np.genfromtxt(fileName, delimiter='\t', skip_header=23)
 
     xi = sim_data[0, 1:]
     yi = sim_data[1:, 0]
@@ -636,8 +639,8 @@ def parseSimData(fileName):
 
 
 def gridInterpolation(x, y, z, pixelPitch):
-    xi = np.arange(min(x), max(x)+pixelPitch, pixelPitch)
-    yi = np.arange(min(y), max(y)+pixelPitch, pixelPitch)
+    xi = np.arange(np.min(x), np.max(x)+pixelPitch, pixelPitch)
+    yi = np.arange(np.min(y), np.max(y)+pixelPitch, pixelPitch)
     #Generating a regular grid to interpolate the data
     xi, yi = np.meshgrid(xi, yi)
     #interpolating using delaunay triangularization/natural neighbor
@@ -681,7 +684,6 @@ def centerOrigin(xi, yi, zi):
     yi = yi - midPointY
     ### End Center Finding ###
     return xi, yi, midPointX, midPointY, longAxisPower, shortAxisPower
-
 
 if __name__ == "__main__":
     main()

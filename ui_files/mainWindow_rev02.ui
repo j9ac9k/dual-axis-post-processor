@@ -416,6 +416,11 @@
          </item>
          <item>
           <property name="text">
+           <string>10.0mm</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
            <string>5.0mm</string>
           </property>
          </item>
@@ -795,32 +800,22 @@
           <widget class="QComboBox" name="colormapComboBox">
            <item>
             <property name="text">
-             <string>Jet</string>
+             <string>Red</string>
             </property>
            </item>
            <item>
             <property name="text">
-             <string>Spectral</string>
+             <string>Green</string>
             </property>
            </item>
            <item>
             <property name="text">
-             <string>CubeHelix</string>
+             <string>Blue</string>
             </property>
            </item>
            <item>
             <property name="text">
-             <string>Gist Earth</string>
-            </property>
-           </item>
-           <item>
-            <property name="text">
-             <string>CoolWarm</string>
-            </property>
-           </item>
-           <item>
-            <property name="text">
-             <string>Flag</string>
+             <string>Purple</string>
             </property>
            </item>
           </widget>
