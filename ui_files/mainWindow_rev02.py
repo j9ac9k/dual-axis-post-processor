@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'mainWindow_rev02.ui'
 #
-# Created: Mon Apr 27 13:44:34 2015
+# Created: Tue Apr 28 14:32:18 2015
 #      by: PyQt4 UI code generator 4.10.4
 #
 # WARNING! All changes made in this file will be lost!
@@ -340,6 +340,8 @@ class Ui_mainWindow(object):
         self.colormapComboBox.addItem(_fromUtf8(""))
         self.colormapComboBox.addItem(_fromUtf8(""))
         self.colormapComboBox.addItem(_fromUtf8(""))
+        self.colormapComboBox.addItem(_fromUtf8(""))
+        self.colormapComboBox.addItem(_fromUtf8(""))
         self.horizontalLayout_2.addWidget(self.colormapComboBox)
         self.colormapReverseCheckbox = QtGui.QCheckBox(self.layoutWidget)
         self.colormapReverseCheckbox.setChecked(True)
@@ -408,10 +410,12 @@ class Ui_mainWindow(object):
         self.exportInterpolatedCheckbox.setText(_translate("mainWindow", "Export Interpolated Data", None))
         self.label_3.setToolTip(_translate("mainWindow", "<html><head/><body><p><img src=\":/images/colorMaps.png\"/></p></body></html>", None))
         self.label_3.setText(_translate("mainWindow", "Colormap", None))
-        self.colormapComboBox.setItemText(0, _translate("mainWindow", "Red", None))
-        self.colormapComboBox.setItemText(1, _translate("mainWindow", "Green", None))
-        self.colormapComboBox.setItemText(2, _translate("mainWindow", "Blue", None))
-        self.colormapComboBox.setItemText(3, _translate("mainWindow", "Purple", None))
+        self.colormapComboBox.setItemText(0, _translate("mainWindow", "Cube Helix", None))
+        self.colormapComboBox.setItemText(1, _translate("mainWindow", "Cube Helix Purple", None))
+        self.colormapComboBox.setItemText(2, _translate("mainWindow", "Red", None))
+        self.colormapComboBox.setItemText(3, _translate("mainWindow", "Green", None))
+        self.colormapComboBox.setItemText(4, _translate("mainWindow", "Blue", None))
+        self.colormapComboBox.setItemText(5, _translate("mainWindow", "Purple", None))
         self.colormapReverseCheckbox.setToolTip(_translate("mainWindow", "<html><head/><body><p>Reverses the colormap ex: blue=hot &amp; red=cold</p><p><br/></p></body></html>", None))
         self.colormapReverseCheckbox.setText(_translate("mainWindow", "Reverse", None))
 

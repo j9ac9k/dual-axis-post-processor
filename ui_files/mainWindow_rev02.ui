@@ -800,6 +800,16 @@
           <widget class="QComboBox" name="colormapComboBox">
            <item>
             <property name="text">
+             <string>Cube Helix</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>Cube Helix Purple</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
              <string>Red</string>
             </property>
            </item>

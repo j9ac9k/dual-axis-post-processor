@@ -2,6 +2,7 @@ __appname__ = "2D Scan Post Processor"
 __module__ = "main"
 
 #####################################
+# PS$: python <path>\pyuic.py mainWindow_revXX.ui -o mainWindow_revXX.py
 # in the mainWindow_rev*.py file change:
 # import images_rc
 # to
@@ -9,12 +10,13 @@ __module__ = "main"
 #####################################
 
 
-
 from PyQt4.QtGui import QMainWindow
 from PyQt4.QtGui import QIcon
 from PyQt4.QtGui import QFileDialog
 from PyQt4.QtGui import QMessageBox
 from PyQt4.QtGui import QApplication
+from PyQt4.QtGui import QErrorMessage
+from PyQt4.QtGui import QCloseEvent
 from PyQt4.QtCore import QSettings
 from PyQt4.QtCore import QCoreApplication
 
@@ -46,7 +48,6 @@ class MainDialog(QMainWindow, pyMainWindow.Ui_mainWindow):
         self.setupUi(self)
         self.settings = QSettings(QSettings.IniFormat, QSettings.UserScope, "Post Processor", "Post Processor")
         self.load_initial_settings()
-
 
         #push button connectors
         self.inputFileBrowsePushButton.clicked.connect(self.browse_button_clicked)
@@ -113,7 +114,12 @@ class MainDialog(QMainWindow, pyMainWindow.Ui_mainWindow):
         #    args['colorMap'] += str('_r')
         #add this plot for Garth at a later time...
         args['heatMapAndUniformityPlot'] = False
-        postProcessor.process(args)
+        fault = postProcessor.process(args)
+
+        if fault == 'pixel_pitch_fault':
+            QErrorMessage.showMessage(self, fault)
+            QCloseEvent(self)
+
 
 
 def main(args):

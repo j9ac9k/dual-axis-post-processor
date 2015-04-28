@@ -1,7 +1,7 @@
 Detector Viewer Listing
 
 File : C:\Users\dchilders\Documents\ZemaxModels\Arrays\HPAC\HPAC_NoCad_2x_GlassSideRadiantModel5x10_1M.ZMX
-Title: 
+Title: Test Zemax
 Date : 4/23/2015
 
 
