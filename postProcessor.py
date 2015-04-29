@@ -28,7 +28,7 @@ style.use('ggplot')
 
 # Importing separate paring file
 def parse_arguments():
-    # default values should nothing be passed/specified
+    # default values should nothing be passesd/specified
     default_file_name = "FJ800 30x63 1-SLM 10mm.csv"
     # default_file_name = "sampledata.csv"
     # used in the naming of the plots
@@ -54,14 +54,13 @@ def parse_arguments():
     default_grid_resolution = 10
     # number of contour plot lines to display
     default_contour_lines = 10
-
     # lamp boundary to render
     default_power_boundary = .90
 
     # lamp profile to evaluate
     # FJ800 - 100, 100
     # FJ100-75 - 75, 25
-    default_target_width, default_target_height = 200, 100
+    default_target_width, default_target_height = 100, 100
 
     # default to 1mm, can be lowered for higher resolution plots
     default_pixel_pitch = .2
@@ -78,9 +77,7 @@ def parse_arguments():
     default_auto_save_figure = False
 
     # set default colormap
-    # default_colormap = cm.cubehelix_r
-    # default_colormap = sns.cubehelix_palette(8, start=2, rot=0, dark=0, light=.95, reverse=False, as_cmap=True)
-    default_colormap = 'red'
+    default_colormap = 'cube helix'
     default_reverse = False
     # for more info on argparse see: http://pymotw.com/2/argparse/
     parser = argparse.ArgumentParser()
@@ -142,7 +139,7 @@ def parse_arguments():
     parser.add_argument('-c', '--contour', action='store_true',
                         dest='contour_plot',
                         default=default_contour_plot,
-                        help='Generate Topograhical Plot')
+                        help='Generate Topographical Plot')
     parser.add_argument('-m', '--heatmap', action='store_true',
                         dest='heat_map',
                         default=default_heat_map,
@@ -156,13 +153,13 @@ def parse_arguments():
                         default=default_short_axis_plot,
                         help='Generate Short Axis Plot')
     parser.add_argument('-D', "--diagonal", action='store_true',
-                        dest='diagAxisPlot',
+                        dest='diagonal_axis_plot',
                         default=default_diagonal_axis_plot,
                         help='Generate Diagonal Plot')
     parser.add_argument('-s', '--surface', action='store_true',
                         dest='surface_plot',
                         default=default_surface_plot,
-                        help='Geenrate Surface Plot')
+                        help='Generate Surface Plot')
     parser.add_argument('-u', '--uniformity', action='store_true',
                         dest='uniformity_plot',
                         default=default_uniformity_plot,
@@ -172,14 +169,14 @@ def parse_arguments():
                         default=default_uniformity_vs_box_size_ratio_plot,
                         help='Plot to ensure the sample points used for uniformity calculation are accurate')
     parser.add_argument('-A', '--autoSave', action='store_true',
-                        dest='autoSave',
+                        dest='auto_save',
                         default=default_auto_save_figure,
                         help='Auto Save Figures')
     parser.add_argument('-e', '--exportCSV', action='store_true',
                         dest='csv_export',
                         default=default_csv_export,
                         help='Export CSV Data from interpolated long and short axis scans')
-    parser.add_argument('-z, --heatMapAndUniformity', action='store_true',
+    parser.add_argument('-z, --heat_map_and_uniformity_plot', action='store_true',
                         dest='heat_map_and_uniformity_plot',
                         default=default_heat_map_and_uniformity_plot,
                         help='Heat Map and Uniformity Plot super-positioned, a plot request from Garth')
@@ -198,12 +195,12 @@ def parse_arguments():
                 'heat_map': args.heat_map,
                 'long_axis_plot': args.long_axis_plot,
                 'short_axis_plot': args.short_axis_plot,
-                'diagonal_axis_plot': args.diagAxisPlot,
+                'diagonal_axis_plot': args.diagonal_axis_plot,
                 'surface_plot': args.surface_plot,
                 'uniformity_plot': args.uniformity_plot,
                 'uniformity_vs_box_size_ratio_plot': args.uniformity_vs_box_size_ratio_plot,
                 'aperture': args.aperture,
-                'auto_save_figures': args.autoSave,
+                'auto_save_figures': args.auto_save,
                 'csv_export': args.csv_export,
                 'heat_map_and_uniformity_plot': args.heat_map_and_uniformity_plot,
                 'colormap': args.colormap,
@@ -236,7 +233,6 @@ def process(args):
     # Setting The ColorMap
     cmap = color_maps[args['colormap']]
 
-    # cmap.set_bad('r', 1.0)
     # ==============================================================================
     #     #determining grid-line spacing
     # ==============================================================================
@@ -370,7 +366,7 @@ def process(args):
         ax.add_collection(p)
         ax.add_patch(rectangle)
 
-        # draw colorbar
+        # draw color bar
         divider = make_axes_locatable(plt.gca())
         cax = divider.append_axes("right", size="5%", pad=0.2)
         plt.colorbar(p, cax=cax)
@@ -458,7 +454,7 @@ def process(args):
                              + args['scan_name'] + ")")
         divider = make_axes_locatable(plt.gca())
         ax = fig.add_subplot(111)
-        ax.set_title(args['scan_name'] + ' Heat Map And Unifromity Plot')
+        ax.set_title(args['scan_name'] + ' Heat Map And Uniformity Plot')
         plt.gca().set_aspect('equal', adjustable='box')
         plt.gca().set_xticks(x_ticks)
         plt.gca().set_yticks(y_ticks)
@@ -487,9 +483,9 @@ def process(args):
 
         # Changing the gray colormap based on reverse or non-reverse base cmap
         if sum(cmap(1))/len(cmap(1)) > 0.8:
-            gray_cmap = cm.Grey_s_r
+            gray_cmap = plt.set_cmap('gist_gray')
         else:
-            gray_cmap = cm.Grey_s
+            gray_cmap = plt.set_cmap('gist.yarg')
         p = PatchCollection(sample_points, cmap=gray_cmap, lw=0)
         p.set_clim([0, 1])
         p.set_array(np.array(color))
@@ -506,10 +502,10 @@ def process(args):
         if args['auto_save_figures']:
             savefig(args['scan_name'] + "heat map and uniformity plot", dpi=200)
 
-            # ==============================================================================
-            #     Generate Interpoalted plot that goes corner to corner
-            #
-            # ==============================================================================
+    # ==============================================================================
+    #     Generate Interpolated plot that goes corner to corner
+    #
+    # ==============================================================================
     if args['diagonal_axis_plot']:
         try:
             theta = np.arctan([args['target_height']/args['target_width']])
@@ -536,10 +532,11 @@ def process(args):
         new_grid[:, -1] = zi_f
 
         # Trimming down gird data to y-axis near y = 0
-        new_grid = new_grid[abs(new_grid[:, 1]) < 30]
+        new_grid = new_grid[abs(new_grid[:, 1]) < args['pixel_pitch']*100]
 
         # Trimming down grid-data to x-values within map profile
-        new_grid = new_grid[abs(new_grid[:, 0]) < (1.1 / 2) * np.sqrt(args['target_height']**2 + args['target_width']**2)]
+        new_grid = \
+            new_grid[abs(new_grid[:, 0]) < (1.5 / 2) * np.sqrt(args['target_height']**2 + args['target_width']**2)]
 
         # Re-Interpolate the data
         xi_r, yi_r, zi_r = grid_interpolation(new_grid[:, 0], new_grid[:, 1], new_grid[:, 2], args['pixel_pitch'])
@@ -646,8 +643,8 @@ def parse_row_raw_data(filename):
 def parse_sim_data(filename):
 
     # Parsing header information
-    with open(filename) as myfile:
-        head = list(islice(myfile, 12))
+    with open(filename) as my_file:
+        head = list(islice(my_file, 12))
 
     for idx, string in enumerate(head):
         head[idx] = string.replace('\n', '')
@@ -700,12 +697,10 @@ def grid_interpolation(x, y, z, pixel_pitch):
     yi = np.arange(np.min(y), np.max(y)+pixel_pitch, pixel_pitch)
     # Generating a regular grid to interpolate the data
     xi, yi = np.meshgrid(xi, yi)
-    # interpolating using delaunay triangularization/natural neighbor
 
     zi = mlab.griddata(x, y, z, xi, yi, interp='linear')
     # handle NaN issues
     zi = np.nan_to_num(zi)
-
     # Scaling Z values should normalPlot be set to True
     zi = zi / np.max(zi)
     return xi, yi, zi
@@ -726,17 +721,19 @@ def center_origin(xi, yi, zi):
             long_axis_power = z[n, :]
 
     # setting the value that will be used to determine the cutoff...
-    boundary_value = max(long_axis_power)*.7
+    x_boundary_value = np.min(long_axis_power) + (np.max(long_axis_power) - np.min(long_axis_power)) / 4
 
     # finding x Boundaries
-    x_boundary_1, x_boundary_2 = find_boundaries(x, long_axis_power, boundary_value)
+    x_boundary_1, x_boundary_2 = find_boundaries(x, long_axis_power, x_boundary_value)
 
     # determining middle of lamp along X axis
     mid_point_x = np.average([x_boundary_1, x_boundary_2])
     xi = xi - mid_point_x
 
     short_axis_power = z[:, find_nearest_index(xi[0], 0)]
-    y_boundary_1, y_boundary_2 = find_boundaries(y, short_axis_power, boundary_value)
+    y_boundary_value = np.min(short_axis_power) + (np.max(short_axis_power) - np.min(short_axis_power)) / 4
+
+    y_boundary_1, y_boundary_2 = find_boundaries(y, short_axis_power, y_boundary_value)
 
     mid_point_y = np.average([y_boundary_1, y_boundary_2])
     yi = yi - mid_point_y

@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'mainWindow_rev02.ui'
 #
-# Created: Tue Apr 28 14:32:18 2015
+# Created: Wed Apr 29 11:21:58 2015
 #      by: PyQt4 UI code generator 4.10.4
 #
 # WARNING! All changes made in this file will be lost!
@@ -344,7 +344,7 @@ class Ui_mainWindow(object):
         self.colormapComboBox.addItem(_fromUtf8(""))
         self.horizontalLayout_2.addWidget(self.colormapComboBox)
         self.colormapReverseCheckbox = QtGui.QCheckBox(self.layoutWidget)
-        self.colormapReverseCheckbox.setChecked(True)
+        self.colormapReverseCheckbox.setChecked(False)
         self.colormapReverseCheckbox.setObjectName(_fromUtf8("colormapReverseCheckbox"))
         self.horizontalLayout_2.addWidget(self.colormapReverseCheckbox)
         spacerItem11 = QtGui.QSpacerItem(40, 20, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Minimum)

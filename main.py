@@ -104,11 +104,6 @@ class MainDialog(QMainWindow, pyMainWindow.Ui_mainWindow):
         else:
             args['simulated_data'] = False
 
-        # replace spaces with understores to handle colormaps
-        # args['colormap'] = args['colormap'].replace(" ", "_")
-
-        # if self.colormapReverseCheckbox.isChecked():
-        #     args['colormap'] += str('_r')
         # add this plot for Garth at a later time...
         args['heat_map_and_uniformity_plot'] = False
         postProcessor.process(args)
@@ -119,7 +114,6 @@ class MainDialog(QMainWindow, pyMainWindow.Ui_mainWindow):
 
 
 def main(args):
-# def main():
     QCoreApplication.setApplicationName("2D Scan Post Processor")
     QCoreApplication.setApplicationVersion("0.2")
     QCoreApplication.setOrganizationName("Phoseon Technology")
