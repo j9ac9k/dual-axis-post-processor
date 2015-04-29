@@ -8,7 +8,11 @@ __module__ = "main"
 # to
 # from ui_files import images_rc
 #####################################
-
+import postProcessor
+import os
+import sys
+# import subprocess
+import os.path
 
 from PyQt4.QtGui import QMainWindow
 from PyQt4.QtGui import QIcon
@@ -19,12 +23,6 @@ from PyQt4.QtGui import QErrorMessage
 from PyQt4.QtGui import QCloseEvent
 from PyQt4.QtCore import QSettings
 from PyQt4.QtCore import QCoreApplication
-
-import postProcessor
-import os
-import sys
-#import subprocess
-import os.path
 from ui_files import mainWindow_rev02 as pyMainWindow
 
 appDataPath = os.environ["APPDATA"] + "\\Phoseon\\PostProcessor\\"
@@ -35,13 +33,14 @@ if not os.path.exists(appDataPath):
     except Exception:
         appDataPath = os.getcwd()
 
+
 class MainDialog(QMainWindow, pyMainWindow.Ui_mainWindow):
 
     config = appDataPath + "config.ini"
 
     def __init__(self, parent=None):
         super(MainDialog, self).__init__(parent)
-        #Lines to generate the taskbar icon
+        # Lines to generate the taskbar icon
         self.setWindowTitle("Post Processor")
         self.setWindowIcon(QIcon('.ui_files\images\phologo.png'))
         self.show()
@@ -49,7 +48,7 @@ class MainDialog(QMainWindow, pyMainWindow.Ui_mainWindow):
         self.settings = QSettings(QSettings.IniFormat, QSettings.UserScope, "Post Processor", "Post Processor")
         self.load_initial_settings()
 
-        #push button connectors
+        # push button connectors
         self.inputFileBrowsePushButton.clicked.connect(self.browse_button_clicked)
         self.processPushButton.clicked.connect(self.process_button_clicked)
 
@@ -57,7 +56,7 @@ class MainDialog(QMainWindow, pyMainWindow.Ui_mainWindow):
         """
         Loads the previously stores values on the UI
         """
-        #TODO: save previous entries and restore upon app opening
+        # TODO: save previous entries and restore upon app opening
         pass
 
     def browse_button_clicked(self):
@@ -78,51 +77,49 @@ class MainDialog(QMainWindow, pyMainWindow.Ui_mainWindow):
     def process_button_clicked(self):
         """ Process the csv file with the options selected """
 
-        args = {}
-        args['fileName'] = str(self.inputFileLineEdit.text())
-        args['gridResolution'] = 10
-        args['contourResolution'] = self.contourLinesSpinBox.value()
-        args['scanName'] = str(self.scanNameLineEdit.text())
-        args['powerBoundaryPercentage'] = self.powerBoundarySpinBox.value() / 100.0
-        args['pixelPitch'] = self.pixelPitchDoubleSpinBox.value()
-        args['targetWidth'] = self.widthProfileSpinBox.value()
-        args['targetHeight'] = self.heightProfileSpinBox.value()
-        args['contourPlot'] = self.contourPlotCheckbox.isChecked()
-        args['heatMap'] = self.heatMapCheckbox.isChecked()
-        args['longAxisPlot'] = self.longAxisPlotCheckbox.isChecked()
-        args['shortAxisPlot'] = self.shortAxisPlotCheckbox.isChecked()
-        args['diagonalAxisPlot'] = self.diagonalAxisPlotCheckbox.isChecked()
-        args['surfacePlot'] = self.surfacePlotCheckbox.isChecked()
-        args['uniformityPlot'] = self.uniformityPlotCheckbox.isChecked()
-        args['uniformityVsBoxSizeRatioPlot'] = self.uniformityBoxSizeCheckbox.isChecked()
-        args['aperture'] = float(str(self.apertureComboBox.currentText()).split('mm')[0])
-        args['autoSaveFigures'] = self.autoSaveFigsCheckbox.isChecked()
-        args['csvExport'] = self.exportInterpolatedCheckbox.isChecked()
-        args['colorMapReverse'] = self.colormapReverseCheckbox.isChecked()
-        args['colorMap'] = str(self.colormapComboBox.currentText()).lower()
-        
+        args = {'filename': str(self.inputFileLineEdit.text()),
+                'grid_resolution': 10,
+                'contour_resolution': self.contourLinesSpinBox.value(),
+                'scan_name': str(self.scanNameLineEdit.text()),
+                'power_boundary_percentage': self.powerBoundarySpinBox.value() / 100.0,
+                'pixel_pitch': self.pixelPitchDoubleSpinBox.value(),
+                'target_width': self.widthProfileSpinBox.value(),
+                'target_height': self.heightProfileSpinBox.value(),
+                'contour_plot': self.contourPlotCheckbox.isChecked(),
+                'heat_map': self.heatMapCheckbox.isChecked(),
+                'long_axis_plot': self.longAxisPlotCheckbox.isChecked(),
+                'short_axis_plot': self.shortAxisPlotCheckbox.isChecked(),
+                'diagonal_axis_plot': self.diagonalAxisPlotCheckbox.isChecked(),
+                'surface_plot': self.surfacePlotCheckbox.isChecked(),
+                'uniformity_plot': self.uniformityPlotCheckbox.isChecked(),
+                'uniformity_vs_box_size_ratio_plot': self.uniformityBoxSizeCheckbox.isChecked(),
+                'aperture': float(str(self.apertureComboBox.currentText()).split('mm')[0]),
+                'auto_save_figures': self.autoSaveFigsCheckbox.isChecked(),
+                'csv_export': self.exportInterpolatedCheckbox.isChecked(),
+                'colormap': str(self.colormapComboBox.currentText()).lower(),
+                'colormap_reverse': self.colormapReverseCheckbox.isChecked()}
 
         if str(self.inputFileLineEdit.text()).split('.')[-1] == 'txt':
-            args['simulatedData'] = True
+            args['simulated_data'] = True
         else:
-            args['simulatedData'] = False
+            args['simulated_data'] = False
 
-        #replace spaces with understores to handle colormaps
-        #args['colorMap'] = args['colorMap'].replace(" ", "_")
+        # replace spaces with understores to handle colormaps
+        # args['colormap'] = args['colormap'].replace(" ", "_")
 
-        #if self.colormapReverseCheckbox.isChecked():
-        #    args['colorMap'] += str('_r')
-        #add this plot for Garth at a later time...
-        args['heatMapAndUniformityPlot'] = False
-        fault = postProcessor.process(args)
+        # if self.colormapReverseCheckbox.isChecked():
+        #     args['colormap'] += str('_r')
+        # add this plot for Garth at a later time...
+        args['heat_map_and_uniformity_plot'] = False
+        postProcessor.process(args)
 
-        if fault == 'pixel_pitch_fault':
-            QErrorMessage.showMessage(self, fault)
-            QCloseEvent(self)
-
+        # if fault == 'pixel_pitch_fault':
+        #     QErrorMessage.showMessage(self, fault)
+        #     QCloseEvent(self)
 
 
 def main(args):
+# def main():
     QCoreApplication.setApplicationName("2D Scan Post Processor")
     QCoreApplication.setApplicationVersion("0.2")
     QCoreApplication.setOrganizationName("Phoseon Technology")
@@ -130,9 +127,10 @@ def main(args):
 
     app = QApplication([])
     form = MainDialog()
-    #form.show()
-    #app.exec_()
+    # form.show()
+    # app.exec_()
     sys.exit(app.exec_())
+
 if __name__ == "__main__":
     main(sys.argv[1:])
 
