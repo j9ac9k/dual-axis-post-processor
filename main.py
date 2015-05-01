@@ -7,6 +7,8 @@ __module__ = "main"
 # import images_rc
 # to
 # from ui_files import images_rc
+#
+#
 #####################################
 import postProcessor
 import os
@@ -96,7 +98,7 @@ class MainDialog(QMainWindow, pyMainWindow.Ui_mainWindow):
                 'aperture': float(str(self.apertureComboBox.currentText()).split('mm')[0]),
                 'auto_save_figures': self.autoSaveFigsCheckbox.isChecked(),
                 'csv_export': self.exportInterpolatedCheckbox.isChecked(),
-                'colormap': str(self.colormapComboBox.currentText()).lower(),
+                'colormap': str(self.colormapComboBox.currentText()).lower().replace(' ', '-'),
                 'colormap_reverse': self.colormapReverseCheckbox.isChecked()}
 
         if str(self.inputFileLineEdit.text()).split('.')[-1] == 'txt':

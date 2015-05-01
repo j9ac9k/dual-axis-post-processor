@@ -65,7 +65,7 @@
         </font>
        </property>
        <property name="toolTip">
-        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;img src=&quot;:/images/contourPlot.png&quot; width=&quot;400&quot; height=&quot;300&quot;/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;img src=&quot;:/images/heat_map.png&quot; width=&quot;400&quot; height=&quot;300&quot;/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
        </property>
        <property name="text">
         <string>Heat Map</string>
@@ -83,7 +83,7 @@
         </font>
        </property>
        <property name="toolTip">
-        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;img height=&quot;300&quot; width=&quot;400&quot; src=&quot;:/images/topographicalPlot.png&quot;/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;img height=&quot;300&quot; width=&quot;400&quot; src=&quot;:/images/contour_plot.png&quot;/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
        </property>
        <property name="text">
         <string>Contour Plot</string>
@@ -158,7 +158,7 @@
         </font>
        </property>
        <property name="toolTip">
-        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;img height=&quot;300&quot; width=&quot;400&quot; src=&quot;:/images/uniformityPlot.png&quot;/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;img height=&quot;300&quot; width=&quot;400&quot; src=&quot;:/images/uniformity_plot.png&quot;/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
        </property>
        <property name="text">
         <string>Uniformity Plot</string>
@@ -173,7 +173,7 @@
         </font>
        </property>
        <property name="toolTip">
-        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;img height=&quot;300&quot; width=&quot;400&quot; src=&quot;:/images/longAxisPlot.png&quot;/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;img height=&quot;300&quot; width=&quot;400&quot; src=&quot;:/images/long_axis_plot.png&quot;/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
        </property>
        <property name="text">
         <string>Long Axis Plot</string>
@@ -188,7 +188,7 @@
         </font>
        </property>
        <property name="toolTip">
-        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;img height=&quot;300&quot; width=&quot;400&quot; src=&quot;:/images/shortAxisPlot.png&quot;/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;img height=&quot;300&quot; width=&quot;400&quot; src=&quot;:/images/short_axis_plot.png&quot;/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
        </property>
        <property name="text">
         <string>Short Axis Plot</string>
@@ -202,6 +202,9 @@
          <pointsize>8</pointsize>
         </font>
        </property>
+       <property name="toolTip">
+        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;img height=&quot;300&quot; width=&quot;400&quot; src=&quot;:/images/diagonal_axis_plot.png&quot;/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+       </property>
        <property name="text">
         <string>Diagonal Axis Plot</string>
        </property>
@@ -210,7 +213,7 @@
      <item>
       <widget class="QCheckBox" name="surfacePlotCheckbox">
        <property name="toolTip">
-        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;img height=&quot;300&quot; width=&quot;400&quot; src=&quot;:/images/surfacePlot.png&quot;/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;img height=&quot;300&quot; width=&quot;400&quot; src=&quot;:/images/surface_plot.png&quot;/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
        </property>
        <property name="text">
         <string>3D Surface Plot</string>
@@ -805,17 +808,7 @@
            </item>
            <item>
             <property name="text">
-             <string>Cube Helix Purple</string>
-            </property>
-           </item>
-           <item>
-            <property name="text">
              <string>Red</string>
-            </property>
-           </item>
-           <item>
-            <property name="text">
-             <string>Green</string>
             </property>
            </item>
            <item>
@@ -825,7 +818,87 @@
            </item>
            <item>
             <property name="text">
+             <string>Green</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
              <string>Purple</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>Orange</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>Blue-Green</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>Blue-Purple</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>Green-Blue</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>Orange-Red</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>Purple-Blue</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>Purple-Blue-Green</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>Purple-Red</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>Red-Purple</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>Yellow-Green</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>Yellow-Green-Blue</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>Yellow-Orange-Brown</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>Yellow-Orange-Red</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>Flag</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>Jet</string>
             </property>
            </item>
           </widget>

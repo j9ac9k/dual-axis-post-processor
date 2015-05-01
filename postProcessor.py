@@ -7,9 +7,7 @@ import csv
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.mlab as mlab
-import seaborn as sns
-import argparse
-
+import parser
 from itertools import islice
 from mpl_toolkits.mplot3d import Axes3D
 from matplotlib.ticker import LinearLocator, FormatStrFormatter
@@ -20,193 +18,13 @@ from matplotlib import cm
 from matplotlib import colors
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 from pylab import savefig
+import colorPicker
 style.use('ggplot')
 # insert after each print statement
 # import sy_s
 # sy_s.stdout.flush()
 
 
-# Importing separate paring file
-def parse_arguments():
-    # default values should nothing be passesd/specified
-    default_file_name = "FJ800 30x63 1-SLM 10mm.csv"
-    # default_file_name = "sampledata.csv"
-    # used in the naming of the plots
-    default_scan_name = 'Sample Data'
-
-    # Doug's Simulated data?
-    default_simulated_data = False
-
-    # Dual Axis Plots
-    default_heat_map = False
-    default_contour_plot = True
-    default_surface_plot = False
-    default_uniformity_plot = True
-    default_heat_map_and_uniformity_plot = False
-    default_uniformity_vs_box_size_ratio_plot = False
-
-    # Single Axis Plots
-    default_long_axis_plot = False
-    default_short_axis_plot = False
-    default_diagonal_axis_plot = True
-
-    # determines grid line spacing on contour plot
-    default_grid_resolution = 10
-    # number of contour plot lines to display
-    default_contour_lines = 10
-    # lamp boundary to render
-    default_power_boundary = .90
-
-    # lamp profile to evaluate
-    # FJ800 - 100, 100
-    # FJ100-75 - 75, 25
-    default_target_width, default_target_height = 100, 100
-
-    # default to 1mm, can be lowered for higher resolution plots
-    default_pixel_pitch = .2
-
-    # used in the uniformity calculation
-    # if no aperture is used on sensor, keep at 12.5
-    # 1mm & 5mm apertures are available and should be used only when requested
-    default_aperture = 12.5
-
-    # export CSV file contents
-    default_csv_export = False
-
-    # automatically save figures
-    default_auto_save_figure = False
-
-    # set default colormap
-    default_colormap = 'cube helix'
-    default_reverse = False
-    # for more info on argparse see: http://pymotw.com/2/argparse/
-    parser = argparse.ArgumentParser()
-
-    parser.add_argument('-f', '--file', action='store', dest='filename',
-                        default=default_file_name,
-                        help='The file name of the csv file used for post processing')
-    parser.add_argument('-n', '--name', action='store', dest='scan_name',
-                        default=default_scan_name,
-                        help='Naming the scan, the name will be applied to plot titles')
-    parser.add_argument('-g', '--grid', action='store', dest='grid_resolution',
-                        default=default_grid_resolution,
-                        help='the spacing between grid lines',
-                        type=int)
-    parser.add_argument('-l', '--lines', action='store',
-                        dest='contour_resolution',
-                        default=default_contour_lines,
-                        help='number of contour lines to draw on the contour plot',
-                        type=int)
-    parser.add_argument('-b', '--boundary', action='store',
-                        dest='power_boundary_percentage',
-                        default=default_power_boundary,
-                        help='Percentage of max power to draw region relative to lamp profile',
-                        type=float)
-    parser.add_argument('-p', '--pitch', action='store',
-                        dest='pixel_pitch',
-                        default=default_pixel_pitch,
-                        help='Distance between interpolated points',
-                        type=float)
-    parser.add_argument('-W', '--width', action='store',
-                        dest='target_width',
-                        default=default_target_width,
-                        help='Desired Light Profile Width (mm)',
-                        type=int)
-    parser.add_argument('-H', '--height', action='store',
-                        dest='target_height',
-                        default=default_target_height,
-                        help='Desired Light Profile Height (mm)',
-                        type=int)
-    parser.add_argument('-a', '--aperture', action='store',
-                        dest='aperture',
-                        default=default_aperture,
-                        help='Diameter of aperture used on sensor',
-                        type=float)
-    parser.add_argument('-M', '--colormap', action='store',
-                        dest='colormap',
-                        default=default_colormap,
-                        help='Color Map Scheme to use for plotting',
-                        type=str)
-    # boolean conditions
-    parser.add_argument('-R', '--reverse', action='store_true',
-                        dest='colormap_reverse',
-                        default=default_reverse,
-                        help='Reverse Color Map Scheme')
-    parser.add_argument('-q', '--simulated', action='store_true',
-                        dest='simulated_data',
-                        default=default_simulated_data,
-                        help="Pass argument if using data from Doug's Simulations")
-    parser.add_argument('-c', '--contour', action='store_true',
-                        dest='contour_plot',
-                        default=default_contour_plot,
-                        help='Generate Topographical Plot')
-    parser.add_argument('-m', '--heatmap', action='store_true',
-                        dest='heat_map',
-                        default=default_heat_map,
-                        help='Generate Heat Map')
-    parser.add_argument('-L', "--long", action='store_true',
-                        dest='long_axis_plot',
-                        default=default_long_axis_plot,
-                        help='Generate Long Axis Plot')
-    parser.add_argument('-S', "--short", action='store_true',
-                        dest='short_axis_plot',
-                        default=default_short_axis_plot,
-                        help='Generate Short Axis Plot')
-    parser.add_argument('-D', "--diagonal", action='store_true',
-                        dest='diagonal_axis_plot',
-                        default=default_diagonal_axis_plot,
-                        help='Generate Diagonal Plot')
-    parser.add_argument('-s', '--surface', action='store_true',
-                        dest='surface_plot',
-                        default=default_surface_plot,
-                        help='Generate Surface Plot')
-    parser.add_argument('-u', '--uniformity', action='store_true',
-                        dest='uniformity_plot',
-                        default=default_uniformity_plot,
-                        help='Generate Uniformity Plot')
-    parser.add_argument('-U', '--uniformityCheck', action='store_true',
-                        dest='uniformity_vs_box_size_ratio_plot',
-                        default=default_uniformity_vs_box_size_ratio_plot,
-                        help='Plot to ensure the sample points used for uniformity calculation are accurate')
-    parser.add_argument('-A', '--autoSave', action='store_true',
-                        dest='auto_save',
-                        default=default_auto_save_figure,
-                        help='Auto Save Figures')
-    parser.add_argument('-e', '--exportCSV', action='store_true',
-                        dest='csv_export',
-                        default=default_csv_export,
-                        help='Export CSV Data from interpolated long and short axis scans')
-    parser.add_argument('-z, --heat_map_and_uniformity_plot', action='store_true',
-                        dest='heat_map_and_uniformity_plot',
-                        default=default_heat_map_and_uniformity_plot,
-                        help='Heat Map and Uniformity Plot super-positioned, a plot request from Garth')
-
-    args = parser.parse_args()
-
-    argument = {'filename': args.filename,
-                'grid_resolution': args.grid_resolution,
-                'contour_resolution': args.contour_resolution,
-                'scan_name': args.scan_name,
-                'power_boundary_percentage': args.power_boundary_percentage,
-                'pixel_pitch': args.pixel_pitch,
-                'target_width': args.target_width,
-                'target_height': args.target_height,
-                'contour_plot': args.contour_plot,
-                'heat_map': args.heat_map,
-                'long_axis_plot': args.long_axis_plot,
-                'short_axis_plot': args.short_axis_plot,
-                'diagonal_axis_plot': args.diagonal_axis_plot,
-                'surface_plot': args.surface_plot,
-                'uniformity_plot': args.uniformity_plot,
-                'uniformity_vs_box_size_ratio_plot': args.uniformity_vs_box_size_ratio_plot,
-                'aperture': args.aperture,
-                'auto_save_figures': args.auto_save,
-                'csv_export': args.csv_export,
-                'heat_map_and_uniformity_plot': args.heat_map_and_uniformity_plot,
-                'colormap': args.colormap,
-                'colormap_reverse': args.colormap_reverse,
-                'simulated_data': args.simulated_data}
-    return argument
 
 
 def process(args):
@@ -221,37 +39,28 @@ def process(args):
         xi, yi, zi = grid_interpolation(x, y, z, args['pixel_pitch'])
     xi, yi, x_offset, y_offset, long_axis_power, short_axis_power = center_origin(xi, yi, zi)
 
-    color_maps = {'red': sns.dark_palette("red", reverse=args['colormap_reverse'], as_cmap=True),
-                  'green': sns.dark_palette("green", reverse=args['colormap_reverse'], as_cmap=True),
-                  'blue': sns.dark_palette("blue", reverse=args['colormap_reverse'], as_cmap=True),
-                  'purple': sns.dark_palette("purple", reverse=args['colormap_reverse'], as_cmap=True),
-                  'cube helix': cm.cubehelix,
-                  'cube helix purple': sns.cubehelix_palette(light=1,
-                                                             reverse=args['colormap_reverse'],
-                                                             as_cmap=True)}
-
     # Setting The ColorMap
-    cmap = color_maps[args['colormap']]
+    cmap = colorPicker.retrieve_colormaps(args['colormap'], args['colormap_reverse'])[0]
+
 
     # ==============================================================================
     #     #determining grid-line spacing
     # ==============================================================================
-    x_tick_boundary = args['grid_resolution'] * int(max(abs(np.min(xi)),
-                                                        np.max(xi)) / args['grid_resolution'])
-    x_ticks = np.arange(-x_tick_boundary,
-                        x_tick_boundary + args['grid_resolution'],
-                        args['grid_resolution'])
-    y_tick_boundary = args['grid_resolution'] * int(max(abs(np.min(yi)),
-                                                        np.max(yi))/args['grid_resolution'])
-    y_ticks = np.arange(-y_tick_boundary,
-                        y_tick_boundary + args['grid_resolution'],
-                        args['grid_resolution'])
 
+    x_tick_boundary = int(max(abs(np.min(xi)), np.max(xi)))
+    y_tick_boundary = int(max(abs(np.min(yi)), np.max(yi)))
+
+    x_ticks = np.arange(0, x_tick_boundary, args['grid_resolution'])
+    x_ticks = np.unique(np.array([-np.flipud(x_ticks), x_ticks]).flatten())
+
+    y_ticks = np.arange(0, y_tick_boundary, args['grid_resolution'])
+    y_ticks = np.unique(np.array([-np.flipud(y_ticks), y_ticks]).flatten())
     # draw rectangle
     rectangle = Rectangle((-args['target_width']/2,
                            -args['target_height']/2),
                           args['target_width'],
                           args['target_height'],
+                          clip_on=False,
                           linewidth=3,
                           fill=False,
                           edgecolor='black',
@@ -264,73 +73,75 @@ def process(args):
                                                                                args['target_height'])))
         uniformity = []
         for i in box_size_ratio:
-            uniformity.append(calc_uniformity(i, args, xi, yi, zi)[0])
-        fig = plt.figure(num="Uniformity vs. Box Ratio (" + args['scan_name']
-                             + ")")
+            uniformity.append(calc_uniformity(i, args, xi, yi, zi)[0]*100)
+        fig = plt.figure(num="Uniformity vs. Box Ratio (" + args['scan_name'] + ")")
         ax = fig.add_subplot(111)
         ax.set_title(args['scan_name'] + ' Uniformity vs. Box Ratio Plot')
         ax.set_xlabel('Box Size Ratio')
         ax.set_ylabel('Uniformity (%)')
-        ax.plot(box_size_ratio, uniformity)
-        plt.axis([np.min(box_size_ratio), np.max(box_size_ratio),
-                  0, np.max(uniformity)*1.1])
+        ax.fill_between(box_size_ratio+1, uniformity, 0, color=colors.rgb2hex(cmap(0.5)), alpha=0.3)
+        ax.plot(box_size_ratio+1, uniformity, color=colors.rgb2hex(cmap(0.5)))
+        plt.axis([np.min(box_size_ratio)+1, np.max(box_size_ratio)+1, 0, np.max(uniformity)*1.1])
         if args['auto_save_figures']:
             savefig(args['scan_name'] + " uniformity vs box ratio plot", dpi=200)
 
-            # ==============================================================================
-            #     #Plot Basic Heat Map
-            # ==============================================================================
+    # ==============================================================================
+    #     #Plot Basic Heat Map
+    # ==============================================================================
     if args['heat_map']:
         fig = plt.figure(num="Heat Map (" + args['scan_name'] + ")")
         ax = fig.add_subplot(111)
         ax.set_title(args['scan_name'] + ' Heat Map')
-        plt.gca().set_aspect('equal', adjustable='box')
-        plt.pcolormesh(xi, yi, zi, cmap=cmap, shading='gouraud', alpha=0.8)
+        ax.set_aspect('equal', adjustable='box')
+        ax.set_xticks(x_ticks)
+        ax.set_yticks(y_ticks)
+        #plt.pcolormesh(xi, yi, zi, cmap=cmap, shading='gouraud', alpha=1.0)
+        v = np.linspace(0, 1, 256+1, endpoint=True)
+        plt.contourf(xi, yi, zi, v, cmap=cmap, shading='gouraud')
         plt.axis([np.min(xi), np.max(xi), np.min(yi), np.max(yi)])
         divider = make_axes_locatable(plt.gca())
         cax = divider.append_axes("right", size="5%", pad=0.2)
-        plt.colorbar(cax=cax)
-        ax.grid(True, which='both')
+        v = np.linspace(0, 1, 10+1, endpoint=True)
+        plt.colorbar(cax=cax, ticks=v)
         if args['auto_save_figures']:
             savefig(args['scan_name'] + " Heat Map", dpi=200)
 
-            # ==============================================================================
-            #     #Contour View
-            # ==============================================================================
+    # ==============================================================================
+    #     #Contour View
+    # ==============================================================================
     if args['contour_plot']:
         fig = plt.figure(num="Contour Plot (" + args['scan_name'] + ")")
         ax = fig.add_subplot(111)
         ax.set_title(args['scan_name'] + ' Contour Plot')
-        plt.gca().set_aspect('equal', adjustable='box')
-        plt.gca().set_xticks(x_ticks)
-        plt.gca().set_yticks(y_ticks)
-        plt.contour(xi, yi, zi, args['contour_resolution'],
-                    linewidths=1, cmap=cmap)
+        ax.set_aspect('equal', adjustable='box')
+        ax.set_xticks(x_ticks)
+        ax.set_yticks(y_ticks)
+        v = np.linspace(0, 1, args['contour_resolution']+1, endpoint=True)
+        plt.contour(xi, yi, zi, v, linewidths=2, cmap=cmap)
+        plt.clim(0, 1)
         ax.add_patch(rectangle)
         divider = make_axes_locatable(plt.gca())
         cax = divider.append_axes("right", size="5%", pad=0.2)
-        plt.colorbar(cax=cax)
+
+        plt.colorbar(cax=cax, ticks=v)
         if args['auto_save_figures']:
             savefig(args['scan_name'] + " contour plot", dpi=200)
 
-            # ==============================================================================
-            #     Target vs. Actual Area
-            # ==============================================================================
+    # ==============================================================================
+    #     Target vs. Actual Area
+    # ==============================================================================
     if args['uniformity_plot']:
         uniformity, samples = calc_uniformity(0, args, xi, yi, zi)
-
         fig = plt.figure(num="Uniformity Plot (" + args['scan_name'] + ")")
         ax = fig.add_subplot(111)
-        ax.set_title(args['scan_name'] + ' Uniformity: ' +
-                     '{0:3.2%}'.format(uniformity))
-        plt.gca().set_aspect('equal', adjustable='box')
-        plt.gca().set_xticks(x_ticks)
-        plt.gca().set_yticks(y_ticks)
+        ax.set_title(args['scan_name'] + ' Uniformity: ' + '{0:3.2%}'.format(uniformity))
+        ax.set_aspect('equal', adjustable='box')
+        ax.set_xticks(x_ticks)
+        ax.set_yticks(y_ticks)
 
         # Draw contour line
-        cs = plt.contour(xi, yi, zi, [args['power_boundary_percentage']
-                                      * np.max(zi)],
-                         alpha=0.9,
+        cs = plt.contour(xi, yi, zi, [args['power_boundary_percentage'] * np.max(zi)],
+                         alpha=1.0,
                          colors=colors.rgb2hex(cmap(args['power_boundary_percentage'])))
         manual_locations = [(0, np.max(yi))]
         plt.clabel(cs, [args['power_boundary_percentage']*np.max(zi)],
@@ -373,27 +184,32 @@ def process(args):
         if args['auto_save_figures']:
             savefig(args['scan_name'] + " Uniformity Plot", dpi=200)
 
-            # =============================================================================
-            #     #Surface Plot
-            # =============================================================================
+    # =============================================================================
+    #     #Surface Plot
+    # =============================================================================
     if args['surface_plot']:
         fig = plt.figure(num="Surface Plot (" + args['scan_name'] + ")")
         ax = fig.add_subplot(111)
         ax.set_title(args['scan_name'] + ' Surface Plot')
         ax = fig.gca(projection='3d')
-        surf = ax.plot_surface(xi, yi, zi, cmap=cmap, linewidth=0)
-
+        surf = ax.plot_surface(xi, yi, zi, cmap=cmap, linewidth=0, shade=True)
         ax.set_zlim(0, 1)
-        ax.zaxis.set_major_locator(LinearLocator(10))
+
+        x_surf_ticks = x_ticks[1::2]
+        y_surf_ticks = y_ticks[1::2]
+
+        ax.set_xticks(x_surf_ticks)
+        ax.set_yticks(y_surf_ticks)
+        ax.zaxis.set_major_locator(LinearLocator(11))
         ax.zaxis.set_major_formatter(FormatStrFormatter('%.02f'))
         fig.colorbar(surf)
         plt.axis('equal', adjustable='box')
         if args['auto_save_figures']:
             savefig(args['scan_name'] + " surface plot", dpi=200)
 
-            # ==============================================================================
-            #     #Long Axis Plot
-            # ==============================================================================
+    # ==============================================================================
+    #     #Long Axis Plot
+    # ==============================================================================
     if args['long_axis_plot']:
         if args['csv_export']:
             with open(args['scan_name']+" long axis data.csv", 'wb') as output:
@@ -408,21 +224,17 @@ def process(args):
         ax.set_title(args['scan_name'] + ' Long Axis Scan')
         ax.set_xlabel('Position (mm)')
         ax.set_ylabel('Normalized Output')
-        plt.gca().set_xticks(x_ticks)
-        plt.gca().set_yticks(np.arange(0., 1.+1./args['grid_resolution'],
-                                       1./args['grid_resolution']))
+        ax.set_xticks(x_ticks)
+        ax.set_yticks(np.arange(0, 1.1, 0.1))
         plt.axis([int(np.min(xi)), int(np.max(xi)), 0, np.max(long_axis_power)*1.1])
-        ax.fill(xi[0, :], long_axis_power,
-                color=colors.rgb2hex(cmap(.5)),
-                alpha=0.3)
-        ax.plot(xi[0, :], long_axis_power,
-                color=colors.rgb2hex(cmap(.5)))
+        ax.fill_between(xi[0, :], long_axis_power, 0, color=colors.rgb2hex(cmap(.5)), alpha=0.3)
+        ax.plot(xi[0, :], long_axis_power, color=colors.rgb2hex(cmap(.5)))
         if args['auto_save_figures']:
             savefig(args['scan_name'] + " long axis plot", dpi=200)
 
-            # ==============================================================================
-            #     #Short Axis Plot
-            # ==============================================================================
+    # ==============================================================================
+    #     #Short Axis Plot
+    # ==============================================================================
     if args['short_axis_plot']:
         if args['csv_export']:
             with open(args['scan_name']+" short axis data.csv", 'wb') as output:
@@ -436,28 +248,28 @@ def process(args):
         ax.set_title(args['scan_name'] + ' Short Axis Scan')
         ax.set_xlabel('Position (mm)')
         ax.set_ylabel('Normalized Output')
-        plt.gca().set_xticks(y_ticks)
-        plt.gca().set_yticks(np.arange(0, 1.1, 0.1))
-        plt.axis([int(np.min(yi)), int(np.max(yi)), 0,
-                  np.max(short_axis_power) * 1.1])
-        ax.fill_between(yi[:, 0], short_axis_power, 0, color=colors.rgb2hex(cmap(0.5)),
-                        alpha=0.3)
+        ax.set_xticks(y_ticks)
+        ax.set_yticks(np.arange(0, 1.1, 0.1))
+        #ax.zaxis.set_major_locator(LinearLocator(9))
+        #ax.yaxis.set_major_locator(LinearLocator(9))
+        plt.axis([int(np.min(yi)), int(np.max(yi)), 0, np.max(short_axis_power) * 1.1])
+        ax.fill_between(yi[:, 0], short_axis_power, 0, color=colors.rgb2hex(cmap(0.5)), alpha=0.3)
         ax.plot(yi[:, 0], short_axis_power, color=colors.rgb2hex(cmap(.5)))
         if args['auto_save_figures']:
             savefig(args['scan_name'] + " short axis plot", dpi=200)
 
-            # ==============================================================================
-            #     Generate Heat Map and Uniformity Plot Overlapped (Special Request)
-            # ==============================================================================
+    # ==============================================================================
+    #     Generate Heat Map and Uniformity Plot Overlapped (Special Request)
+    # ==============================================================================
     if args['heat_map_and_uniformity_plot']:
         fig = plt.figure(num="Heat Map and Uniformity Plot ("
                              + args['scan_name'] + ")")
         divider = make_axes_locatable(plt.gca())
         ax = fig.add_subplot(111)
         ax.set_title(args['scan_name'] + ' Heat Map And Uniformity Plot')
-        plt.gca().set_aspect('equal', adjustable='box')
-        plt.gca().set_xticks(x_ticks)
-        plt.gca().set_yticks(y_ticks)
+        ax.set_aspect('equal', adjustable='box')
+        ax.set_xticks(x_ticks)
+        ax.set_yticks(y_ticks)
         plt.pcolormesh(xi, yi, zi, cmap=cmap)
         plt.axis([np.min(xi), np.max(xi), np.min(yi), np.max(yi)])
 
@@ -504,7 +316,6 @@ def process(args):
 
     # ==============================================================================
     #     Generate Interpolated plot that goes corner to corner
-    #
     # ==============================================================================
     if args['diagonal_axis_plot']:
         try:
@@ -549,7 +360,6 @@ def process(args):
 
         x_ticks_endpoint = max(abs(x_axis_start), abs(x_axis_end))
         diagonal_ticks = np.arange(0, x_ticks_endpoint, args['grid_resolution'])
-
         diagonal_ticks = np.unique(np.array([-np.flipud(diagonal_ticks), diagonal_ticks]).flatten())
 
         fig = plt.figure(num="Diagonal Axis Plot (" + args['scan_name'] + ")")
@@ -558,11 +368,10 @@ def process(args):
         ax.set_ylabel('Normalized Output')
         ax.set_xlabel('Distance from Lamp Center (mm)')
 
-        plt.gca().set_xticks(diagonal_ticks)
-        plt.axis([int(x_axis_start*1.5), int(x_axis_end*1.5),
-                  0, np.max(diagonal_power)*1.1])
-        ax.fill(xi_r[0, :], diagonal_power,
-                color=colors.rgb2hex(cmap(0.5)), alpha=0.3)
+        ax.set_xticks(diagonal_ticks)
+        ax.set_yticks(np.arange(0, 1.1, .1))
+        plt.axis([int(np.min(diagonal_ticks)), int(np.max(diagonal_ticks)), 0, np.max(diagonal_power)*1.1])
+        ax.fill_between(xi_r[0, :], diagonal_power, 0, color=colors.rgb2hex(cmap(0.5)), alpha=0.3)
         ax.plot(xi_r[0, :], diagonal_power, color=colors.rgb2hex(cmap(.5)))
 
         if args['auto_save_figures']:
@@ -571,7 +380,7 @@ def process(args):
 
 
 def main():
-    args = parse_arguments()
+    args = parser.parse_arguments()
     process(args)
 
 

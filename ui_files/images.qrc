@@ -1,13 +1,15 @@
-<!DOCTYPE RCC><RCC version="1.0">
- <qresource>
-     <file>images/contourPlot.png</file>
-     <file>images/surfacePlot.png</file>
-     <file>images/topographicalPlot.png</file>
-     <file>images/longAxisPlot.png</file>
-     <file>images/shortAxisPlot.png</file>
-     <file>images/uniformityPlot.png</file>
-	 <file>images/colorMaps.png</file>
-	 <file>images/icon36x36.png</file>
-	 <file>images/phologo.png</file>
- </qresource>
- </RCC>
+<RCC>
+  <qresource>
+    <file>images/icon36x36.png</file>
+    <file>images/phologo.png</file>
+    <file>images/colorMaps.png</file>
+    <file>images/contour_plot.png</file>
+    <file>images/diagonal_axis_plot.png</file>
+    <file>images/heat_map.png</file>
+    <file>images/long_axis_plot.png</file>
+    <file>images/short_axis_plot.png</file>
+    <file>images/surface_plot.png</file>
+    <file>images/uniformity vs box ratio plot.png</file>
+    <file>images/uniformity_plot.png</file>
+  </qresource>
+</RCC>
