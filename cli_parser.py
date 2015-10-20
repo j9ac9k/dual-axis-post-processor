@@ -3,7 +3,7 @@ __author__ = 'omoore'
 import argparse
 def parse_arguments():
     # default values should nothing be passesd/specified
-    default_file_name = "FJ800 30x63 1-SLM 10mm.csv"
+    default_file_name = "FJ800 395nm 2mm.csv"
     # default_file_name = "sampledata.csv"
     # used in the naming of the plots
     default_scan_name = 'Sample Data'
@@ -51,7 +51,7 @@ def parse_arguments():
     default_auto_save_figure = False
 
     # set default colormap
-    default_colormap = 'cube helix'
+    default_colormap = 'cube-helix'
     default_reverse = False
     # for more info on argparse see: http://pymotw.com/2/argparse/
     parser = argparse.ArgumentParser()

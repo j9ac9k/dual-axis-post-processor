@@ -1,14 +1,9 @@
-__appname__ = "2D Scan Post Processor"
-__module__ = "main"
-
 #####################################
 # PS$: python <path>\pyuic.py mainWindow_revXX.ui -o mainWindow_revXX.py
 # in the mainWindow_rev*.py file change:
 # import images_rc
 # to
 # from ui_files import images_rc
-#
-#
 #####################################
 import postProcessor
 import os
@@ -21,12 +16,15 @@ from PyQt4.QtGui import QIcon
 from PyQt4.QtGui import QFileDialog
 from PyQt4.QtGui import QMessageBox
 from PyQt4.QtGui import QApplication
-from PyQt4.QtGui import QErrorMessage
-from PyQt4.QtGui import QCloseEvent
+# from PyQt4.QtGui import QErrorMessage
+# from PyQt4.QtGui import QCloseEvent
 from PyQt4.QtCore import QSettings
 from PyQt4.QtCore import QCoreApplication
 from ui_files import mainWindow_rev02 as pyMainWindow
 
+
+__appname__ = "2D Scan Post Processor"
+__module__ = "main"
 appDataPath = os.environ["APPDATA"] + "\\Phoseon\\PostProcessor\\"
 
 if not os.path.exists(appDataPath):

@@ -7,7 +7,7 @@ import csv
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.mlab as mlab
-import parser
+import cli_parser
 from itertools import islice
 from mpl_toolkits.mplot3d import Axes3D
 from matplotlib.ticker import LinearLocator, FormatStrFormatter
@@ -19,12 +19,11 @@ from matplotlib import colors
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 from pylab import savefig
 import colorPicker
+import copy
 style.use('ggplot')
 # insert after each print statement
-# import sy_s
-# sy_s.stdout.flush()
-
-
+# import sys
+# sys.stdout.flush()
 
 
 def process(args):
@@ -39,34 +38,29 @@ def process(args):
         xi, yi, zi = grid_interpolation(x, y, z, args['pixel_pitch'])
     xi, yi, x_offset, y_offset, long_axis_power, short_axis_power = center_origin(xi, yi, zi)
 
-    # Setting The ColorMap
-    cmap = colorPicker.retrieve_colormaps(args['colormap'], args['colormap_reverse'])[0]
 
-
-    # ==============================================================================
-    #     #determining grid-line spacing
-    # ==============================================================================
-
-    x_tick_boundary = int(max(abs(np.min(xi)), np.max(xi)))
-    y_tick_boundary = int(max(abs(np.min(yi)), np.max(yi)))
-
-    x_ticks = np.arange(0, x_tick_boundary, args['grid_resolution'])
-    x_ticks = np.unique(np.array([-np.flipud(x_ticks), x_ticks]).flatten())
-
-    y_ticks = np.arange(0, y_tick_boundary, args['grid_resolution'])
-    y_ticks = np.unique(np.array([-np.flipud(y_ticks), y_ticks]).flatten())
-    # draw rectangle
     rectangle = Rectangle((-args['target_width']/2,
                            -args['target_height']/2),
                           args['target_width'],
                           args['target_height'],
-                          clip_on=False,
+                          clip_on=True,
                           linewidth=3,
                           fill=False,
                           edgecolor='black',
                           ls='dashed')
+    # Setting The ColorMap
+    cmap = colorPicker.retrieve_colormaps(args['colormap'], args['colormap_reverse'])[0]
+
+    # determining grid-line spacing
+    x_tick_boundary = int(max(abs(np.min(xi)), np.max(xi)))
+    y_tick_boundary = int(max(abs(np.min(yi)), np.max(yi)))
+    x_ticks = np.arange(0, x_tick_boundary, args['grid_resolution'])
+    x_ticks = np.unique(np.array([-np.flipud(x_ticks), x_ticks]).flatten())
+    y_ticks = np.arange(0, y_tick_boundary, args['grid_resolution'])
+    y_ticks = np.unique(np.array([-np.flipud(y_ticks), y_ticks]).flatten())
+
     # ==============================================================================
-    #     #calculate uniformity as a function of box size ratio
+    #     calculate uniformity as a function of box size ratio
     # ==============================================================================
     if args['uniformity_vs_box_size_ratio_plot']:
         box_size_ratio = np.arange(-0.10, .330, 1 / (args['pixel_pitch'] * max(args['target_width'],
@@ -86,7 +80,7 @@ def process(args):
             savefig(args['scan_name'] + " uniformity vs box ratio plot", dpi=200)
 
     # ==============================================================================
-    #     #Plot Basic Heat Map
+    #     Plot Basic Heat Map
     # ==============================================================================
     if args['heat_map']:
         fig = plt.figure(num="Heat Map (" + args['scan_name'] + ")")
@@ -95,7 +89,8 @@ def process(args):
         ax.set_aspect('equal', adjustable='box')
         ax.set_xticks(x_ticks)
         ax.set_yticks(y_ticks)
-        #plt.pcolormesh(xi, yi, zi, cmap=cmap, shading='gouraud', alpha=1.0)
+        # older scheme used to generate heat maps, removing for testing purposes
+        # plt.pcolormesh(xi, yi, zi, cmap=cmap, shading='gouraud', alpha=1.0)
         v = np.linspace(0, 1, 256+1, endpoint=True)
         plt.contourf(xi, yi, zi, v, cmap=cmap, shading='gouraud')
         plt.axis([np.min(xi), np.max(xi), np.min(yi), np.max(yi)])
@@ -107,19 +102,19 @@ def process(args):
             savefig(args['scan_name'] + " Heat Map", dpi=200)
 
     # ==============================================================================
-    #     #Contour View
+    #     Contour View
     # ==============================================================================
     if args['contour_plot']:
         fig = plt.figure(num="Contour Plot (" + args['scan_name'] + ")")
-        ax = fig.add_subplot(111)
-        ax.set_title(args['scan_name'] + ' Contour Plot')
-        ax.set_aspect('equal', adjustable='box')
-        ax.set_xticks(x_ticks)
-        ax.set_yticks(y_ticks)
+        ax_contour = fig.add_subplot(111)
+        ax_contour.set_title(args['scan_name'] + ' Contour Plot')
+        ax_contour.set_aspect('equal', adjustable='box')
+        ax_contour.set_xticks(x_ticks)
+        ax_contour.set_yticks(y_ticks)
         v = np.linspace(0, 1, args['contour_resolution']+1, endpoint=True)
         plt.contour(xi, yi, zi, v, linewidths=2, cmap=cmap)
         plt.clim(0, 1)
-        ax.add_patch(rectangle)
+        ax_contour.add_patch(copy.copy(rectangle))
         divider = make_axes_locatable(plt.gca())
         cax = divider.append_axes("right", size="5%", pad=0.2)
 
@@ -133,12 +128,11 @@ def process(args):
     if args['uniformity_plot']:
         uniformity, samples = calc_uniformity(0, args, xi, yi, zi)
         fig = plt.figure(num="Uniformity Plot (" + args['scan_name'] + ")")
-        ax = fig.add_subplot(111)
-        ax.set_title(args['scan_name'] + ' Uniformity: ' + '{0:3.2%}'.format(uniformity))
-        ax.set_aspect('equal', adjustable='box')
-        ax.set_xticks(x_ticks)
-        ax.set_yticks(y_ticks)
-
+        ax_uniformity = fig.add_subplot(111)
+        ax_uniformity.set_title(args['scan_name'] + ' Uniformity: ' + '{0:3.2%}'.format(uniformity))
+        ax_uniformity.set_aspect('equal', adjustable='box')
+        ax_uniformity.set_xticks(x_ticks)
+        ax_uniformity.set_yticks(y_ticks)
         # Draw contour line
         cs = plt.contour(xi, yi, zi, [args['power_boundary_percentage'] * np.max(zi)],
                          alpha=1.0,
@@ -149,6 +143,7 @@ def process(args):
                    fmt='%1.2f',
                    fontsize=16,
                    manual=manual_locations)
+        ax_uniformity.add_patch(copy.copy(rectangle))
 
         # Showing the Uniformity Points
         labels = np.around(samples[:, 2], decimals=3)
@@ -172,10 +167,9 @@ def process(args):
             sample_points.append(circle)
         color = samples[:, 2]
         p = PatchCollection(sample_points, cmap=cmap, lw=0)
-        p.set_clim([0, 1])
+        p.set_clim(0, 1)
         p.set_array(np.array(color))
-        ax.add_collection(p)
-        ax.add_patch(rectangle)
+        ax_uniformity.add_collection(p)
 
         # draw color bar
         divider = make_axes_locatable(plt.gca())
@@ -185,7 +179,7 @@ def process(args):
             savefig(args['scan_name'] + " Uniformity Plot", dpi=200)
 
     # =============================================================================
-    #     #Surface Plot
+    #     Surface Plot
     # =============================================================================
     if args['surface_plot']:
         fig = plt.figure(num="Surface Plot (" + args['scan_name'] + ")")
@@ -194,7 +188,7 @@ def process(args):
         ax = fig.gca(projection='3d')
         surf = ax.plot_surface(xi, yi, zi, cmap=cmap, linewidth=0, shade=True)
         ax.set_zlim(0, 1)
-
+        # Use every other tick (plot axes are not so crowded this way)
         x_surf_ticks = x_ticks[1::2]
         y_surf_ticks = y_ticks[1::2]
 
@@ -208,7 +202,7 @@ def process(args):
             savefig(args['scan_name'] + " surface plot", dpi=200)
 
     # ==============================================================================
-    #     #Long Axis Plot
+    #     Long Axis Plot
     # ==============================================================================
     if args['long_axis_plot']:
         if args['csv_export']:
@@ -233,7 +227,7 @@ def process(args):
             savefig(args['scan_name'] + " long axis plot", dpi=200)
 
     # ==============================================================================
-    #     #Short Axis Plot
+    #     Short Axis Plot
     # ==============================================================================
     if args['short_axis_plot']:
         if args['csv_export']:
@@ -250,8 +244,6 @@ def process(args):
         ax.set_ylabel('Normalized Output')
         ax.set_xticks(y_ticks)
         ax.set_yticks(np.arange(0, 1.1, 0.1))
-        #ax.zaxis.set_major_locator(LinearLocator(9))
-        #ax.yaxis.set_major_locator(LinearLocator(9))
         plt.axis([int(np.min(yi)), int(np.max(yi)), 0, np.max(short_axis_power) * 1.1])
         ax.fill_between(yi[:, 0], short_axis_power, 0, color=colors.rgb2hex(cmap(0.5)), alpha=0.3)
         ax.plot(yi[:, 0], short_axis_power, color=colors.rgb2hex(cmap(.5)))
@@ -274,7 +266,15 @@ def process(args):
         plt.axis([np.min(xi), np.max(xi), np.min(yi), np.max(yi)])
 
         # draw rectangle
-        ax.add_patch(rectangle)
+        ax.add_patch(Rectangle((-args['target_width']/2,
+                           -args['target_height']/2),
+                          args['target_width'],
+                          args['target_height'],
+                          clip_on=True,
+                          linewidth=3,
+                          fill=False,
+                          edgecolor='black',
+                          ls='dashed'))
 
         uniformity, samples = calc_uniformity(0, args, xi, yi, zi)
         labels = np.around(samples[:, 2], decimals=3)
@@ -322,7 +322,6 @@ def process(args):
             theta = np.arctan([args['target_height']/args['target_width']])
         except ZeroDivisionError:
             theta = np.arctan(np.inf)
-
         theta = -theta
         # convert 2D array into one long 1D array
         xi_f, yi_f, zi_f = xi.flatten(), yi.flatten(), zi.flatten()
@@ -334,15 +333,15 @@ def process(args):
         # Generated a ? x 2 matrix of x and y coordinates for matrix operations
         coordinates = np.transpose(np.matrix(np.squeeze([[xi_f], [yi_f]])))
 
-        # Performing the Givens Rotation
-        rot_coordinates = coordinates * rot_matrix
-        rot_coordinates = np.array(rot_coordinates)
-
+        # Performing the Givens Rotation and converting back to ndarray
+        rot_coordinates = np.array(coordinates * rot_matrix)
+        
         new_grid = np.zeros((len(rot_coordinates), 3))
         new_grid[:, :-1] = rot_coordinates
         new_grid[:, -1] = zi_f
 
-        # Trimming down gird data to y-axis near y = 0
+        # Trimming down gird data to y-axis near y = 0 
+        # Too much trimming results in trinagulation errors
         new_grid = new_grid[abs(new_grid[:, 1]) < args['pixel_pitch']*100]
 
         # Trimming down grid-data to x-values within map profile
@@ -352,14 +351,15 @@ def process(args):
         # Re-Interpolate the data
         xi_r, yi_r, zi_r = grid_interpolation(new_grid[:, 0], new_grid[:, 1], new_grid[:, 2], args['pixel_pitch'])
 
+        # Computing the 'long axis' plot
         diagonal_power_index = find_nearest_index(yi_r[:, 0], 0)
         diagonal_power = zi_r[diagonal_power_index, :] / np.max(zi_r[diagonal_power_index, :])
 
         x_axis_start = int(-0.75 * np.sqrt(args['target_width']**2 + args['target_height']**2))
         x_axis_end = abs(x_axis_start)
 
-        x_ticks_endpoint = max(abs(x_axis_start), abs(x_axis_end))
-        diagonal_ticks = np.arange(0, x_ticks_endpoint, args['grid_resolution'])
+        diagonal_ticks = np.arange(0, x_axis_end, args['grid_resolution'])
+        # mirroring above array, and removing duplicate 0 value
         diagonal_ticks = np.unique(np.array([-np.flipud(diagonal_ticks), diagonal_ticks]).flatten())
 
         fig = plt.figure(num="Diagonal Axis Plot (" + args['scan_name'] + ")")
@@ -367,7 +367,6 @@ def process(args):
         ax.set_title(args['scan_name'] + ' Diagonal Axis Scan')
         ax.set_ylabel('Normalized Output')
         ax.set_xlabel('Distance from Lamp Center (mm)')
-
         ax.set_xticks(diagonal_ticks)
         ax.set_yticks(np.arange(0, 1.1, .1))
         plt.axis([int(np.min(diagonal_ticks)), int(np.max(diagonal_ticks)), 0, np.max(diagonal_power)*1.1])
@@ -376,11 +375,12 @@ def process(args):
 
         if args['auto_save_figures']:
             savefig(args['scan_name'] + " diagonal axis plot", dpi=200)
+    # Show all the plots
     plt.show(True)
 
 
 def main():
-    args = parser.parse_arguments()
+    args = cli_parser.parse_arguments()
     process(args)
 
 
@@ -450,14 +450,11 @@ def parse_row_raw_data(filename):
 
 
 def parse_sim_data(filename):
-
     # Parsing header information
     with open(filename) as my_file:
         head = list(islice(my_file, 12))
-
     for idx, string in enumerate(head):
         head[idx] = string.replace('\n', '')
-
     # Determining the Scan Name based on header information
     title = head[3].split(': ')[-1]
 
@@ -484,6 +481,7 @@ def parse_sim_data(filename):
     else:
         pixel_pitch = horizontal_pitch
 
+    # import actual data
     sim_data = np.genfromtxt(filename, delimiter='\t', skip_header=23)
 
     xi = sim_data[0, 1:]*pixel_pitch
@@ -515,7 +513,6 @@ def grid_interpolation(x, y, z, pixel_pitch):
     return xi, yi, zi
 
 
-# Center Finding Portion ###
 def center_origin(xi, yi, zi):
     # generating new variables to facilitate edge-finding
     x, y, z = sorted(np.unique(xi)), sorted(np.unique(yi)), zi.data
@@ -541,12 +538,10 @@ def center_origin(xi, yi, zi):
 
     short_axis_power = z[:, find_nearest_index(xi[0], 0)]
     y_boundary_value = np.min(short_axis_power) + (np.max(short_axis_power) - np.min(short_axis_power)) / 4
-
     y_boundary_1, y_boundary_2 = find_boundaries(y, short_axis_power, y_boundary_value)
 
     mid_point_y = np.average([y_boundary_1, y_boundary_2])
     yi = yi - mid_point_y
-    # End Center Finding #
     return xi, yi, mid_point_x, mid_point_y, long_axis_power, short_axis_power
 
 if __name__ == "__main__":

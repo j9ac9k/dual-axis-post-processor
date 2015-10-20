@@ -39,7 +39,7 @@ executables = [Executable("pyqt4_matplotlib.py", base=base)]
 
 
 setup(name="Post Processing Script",
-      version="0.2",
+      version="0.2.1",
       description="My GUI application!",
       options={"build_exe": build_exe_options},
       executables=[Executable("main.py", base=base)])
